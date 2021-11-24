@@ -1,6 +1,5 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { HttpException, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import * as bcrypt from 'bcryptjs';
 import { sign } from 'jsonwebtoken';
 import * as crypto from 'crypto';
 
@@ -12,6 +11,7 @@ import e = require('express');
 import { ForgotPasswordDto } from '../dto/forgotPassword.dto';
 import { EmailService } from 'src/shared/services/email.service';
 import { ApiConfigService } from 'src/shared/services/api-config.service';
+import { ResetPasswordDto } from '../dto/resetPassword.dto';
 
 export enum Provider {
   FACEBOOK = 'facebook',
@@ -54,7 +54,7 @@ export class AuthService {
 
   async validateUser(email: string, pass: string): Promise<User> {
     const user = await this.userService.findOne({ email });
-    if (user && (await this.passwordsAreEqual(user.password, pass))) {
+    if (user && (await this.userService.validateHash(pass, user.password))) {
       return user;
     }
     return null;
@@ -82,6 +82,24 @@ export class AuthService {
     return true;
   }
 
+  async resetPassword(resetPasswordDto: ResetPasswordDto): Promise<boolean> {
+    const { email } = resetPasswordDto;
+    const user = await this.userService.findOne({
+      email,
+      resetPasswordExpires: { $gte: new Date() } ,
+    });
+    if (!user) {
+      throw new HttpException(
+        'Password reset token is invalid or has expired',
+        401,
+      );
+    }
+
+    await this.userService.saveNewPassword(user, resetPasswordDto);
+
+    return true;
+  }
+
   async signup(signupUser: UserSignupDto): Promise<{ token: string }> {
     const createdUser = await this.userService.create(signupUser);
     const { email, displayName, userId } = createdUser;
@@ -94,10 +112,6 @@ export class AuthService {
     }
     const userFound = await this.userService.findOne({ email: user.email });
     return !userFound;
-  }
-
-  private async passwordsAreEqual(hashedPassword: string, plainPassword: string): Promise<boolean> {
-    return await bcrypt.compare(plainPassword, hashedPassword);
   }
 
   private generateRandomToken(): string {

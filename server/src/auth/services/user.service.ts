@@ -1,10 +1,12 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { decode } from 'jsonwebtoken';
+import * as bcrypt from 'bcryptjs';
 
 import { User } from '../models/user.interface';
 import { UserSignupDto } from '../dto/userSignup.dto';
+import { ResetPasswordDto } from '../dto/resetPassword.dto';
 
 @Injectable()
 export class UserService {
@@ -79,5 +81,36 @@ export class UserService {
     user.resetPasswordExpires = resetPasswordExpires; // 1 hour
 
     return user.save();
+  }
+
+
+  async saveNewPassword(
+    user: User,
+    resetPasswordDto: ResetPasswordDto,
+  ): Promise<User> {
+    const isTokenValid = await this.validateHash(
+      resetPasswordDto.resetPasswordToken,
+      user.resetPasswordToken,
+    );
+
+    if (!isTokenValid) {
+      throw new HttpException(
+        'Password reset token is invalid or has expired',
+        401,
+      );
+    }
+
+    user.password = resetPasswordDto.password;
+    user.resetPasswordToken = null;
+    user.resetPasswordExpires = null;
+
+    return user.save();
+  }
+
+  async validateHash(plainPassword: string, hashedPassword: string): Promise<boolean> {
+    if (!plainPassword || !hashedPassword) {
+      return Promise.resolve(false);
+    }
+    return await bcrypt.compare(plainPassword, hashedPassword);
   }
 }

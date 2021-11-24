@@ -18,7 +18,7 @@ export class HttpExceptionFilter<T extends HttpException> implements ExceptionFi
     // DUC edited: if (response && response.hasOwnProperty('status')) {
     if (response && typeof response.status === 'function') {
         response.status(statusCode).json({
-          ...error,
+          error,
           path: request.url,
           timestamp: new Date().toISOString(),
         });

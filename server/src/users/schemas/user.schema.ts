@@ -40,7 +40,7 @@ UserSchema.pre('save', async function(next) {
     user.password = password;
   }
   if (user.isModified('resetPasswordToken')) {
-    const resetPasswordToken = await bcrypt.hash(user.resetPasswordToken, 10);
+    const resetPasswordToken = user.resetPasswordToken ? await bcrypt.hash(user.resetPasswordToken, 10) : null;
     user.resetPasswordToken = resetPasswordToken;
   }
   next();
