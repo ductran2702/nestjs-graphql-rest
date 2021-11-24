@@ -5,7 +5,7 @@ import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import authConfig from './auth-config.development';
 import { AuthService } from './services/auth.service';
 import { UserService } from './services/user.service';
-import { TokenDto, UsernameDto, UserSignupDto } from './dto';
+import { TokenDto, UserDto, UsernameDto, UserSignupDto } from './dto';
 import { UserLoginDto } from './dto/userLogin.dto';
 
 @ApiTags('Authorization API')
@@ -14,10 +14,10 @@ import { UserLoginDto } from './dto/userLogin.dto';
 export class AuthController {
   constructor(private authService: AuthService, private readonly userService: UserService) { }
 
-  @Get('facebook')
-  @UseGuards(AuthGuard('facebook'))
-  @ApiOperation({ summary: 'Initiates the Facebook OAuth2 login flow' })
-  facebookLogin() { }
+  // @Get('facebook')
+  // @UseGuards(AuthGuard('facebook'))
+  // @ApiOperation({ summary: 'Initiates the Facebook OAuth2 login flow' })
+  // facebookLogin() { }
 
   @Get('facebook/callback')
   @UseGuards(AuthGuard('facebook'))
@@ -31,10 +31,10 @@ export class AuthController {
     }
   }
 
-  @Get('github')
-  @UseGuards(AuthGuard('github'))
-  @ApiOperation({ summary: 'Initiates the GitHub OAuth2 login flow' })
-  githubLogin() { }
+  // @Get('github')
+  // @UseGuards(AuthGuard('github'))
+  // @ApiOperation({ summary: 'Initiates the GitHub OAuth2 login flow' })
+  // githubLogin() { }
 
   @Get('github/callback')
   @UseGuards(AuthGuard('github'))
@@ -49,10 +49,10 @@ export class AuthController {
     }
   }
 
-  @Get('google')
-  @UseGuards(AuthGuard('google'))
-  @ApiOperation({ summary: 'Initiates the Google OAuth2 login flow' })
-  googleLogin() { }
+  // @Get('google')
+  // @UseGuards(AuthGuard('google'))
+  // @ApiOperation({ summary: 'Initiates the Google OAuth2 login flow' })
+  // googleLogin() { }
 
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
@@ -66,10 +66,10 @@ export class AuthController {
     }
   }
 
-  @Get('twitter')
-  @UseGuards(AuthGuard('twitter'))
-  @ApiOperation({ summary: 'Initiates the Twitter OAuth2 login flow' })
-  twitterLogin() { }
+  // @Get('twitter')
+  // @UseGuards(AuthGuard('twitter'))
+  // @ApiOperation({ summary: 'Initiates the Twitter OAuth2 login flow' })
+  // twitterLogin() { }
 
   @Get('twitter/callback')
   @UseGuards(AuthGuard('twitter'))
@@ -83,10 +83,10 @@ export class AuthController {
     }
   }
 
-  @Get('windowslive')
-  @UseGuards(AuthGuard('windowslive'))
-  @ApiOperation({ summary: 'Initiates the Microsoft Windows Live OAuth2 login flow' })
-  windowsliveLogin() { }
+  // @Get('windowslive')
+  // @UseGuards(AuthGuard('windowslive'))
+  // @ApiOperation({ summary: 'Initiates the Microsoft Windows Live OAuth2 login flow' })
+  // windowsliveLogin() { }
 
   @Get('windowslive/callback')
   @UseGuards(AuthGuard('windowslive'))
@@ -101,10 +101,10 @@ export class AuthController {
     }
   }
 
-  @Get('linkedin')
-  @UseGuards(AuthGuard('linkedin'))
-  @ApiOperation({ summary: 'Initiates the LinkedIn OAuth2 login flow' })
-  linkedinLogin() { }
+  // @Get('linkedin')
+  // @UseGuards(AuthGuard('linkedin'))
+  // @ApiOperation({ summary: 'Initiates the LinkedIn OAuth2 login flow' })
+  // linkedinLogin() { }
 
   @Get('linkedin/callback')
   @UseGuards(AuthGuard('linkedin'))
@@ -118,10 +118,10 @@ export class AuthController {
     }
   }
 
-  @Get('microsoft')
-  @UseGuards(AuthGuard('microsoft'))
-  @ApiOperation({ summary: 'Initiates the Microsoft OAuth2 login flow' })
-  microsoftLogin() { }
+  // @Get('microsoft')
+  // @UseGuards(AuthGuard('microsoft'))
+  // @ApiOperation({ summary: 'Initiates the Microsoft OAuth2 login flow' })
+  // microsoftLogin() { }
 
   @Get('microsoft/callback')
   @UseGuards(AuthGuard('microsoft'))
@@ -186,7 +186,8 @@ export class AuthController {
   @ApiOperation({ summary: 'Get User\'s Information' })
   @UseGuards(AuthGuard('jwt'))
   @Get('me')
-  getProfile(@Request() req) {
-    return this.userService.findOne({ 'providers.providerId': req.user.userId });
+  async getProfile(@Request() req) : Promise<UserDto>{
+    const user = await this.userService.findOne({ $or: [ { 'providers.providerId': req.user.userId }, { userId: req.user.userId } ] } );
+    return new UserDto(user);
   }
 }

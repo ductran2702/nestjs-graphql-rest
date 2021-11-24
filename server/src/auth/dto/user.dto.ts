@@ -1,15 +1,16 @@
 import { IsString, IsEmail, IsOptional, MinLength } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { User } from '../models';
 
 export class UserDto {
   @IsEmail()
   @ApiProperty({ example: 'someone@company.com', description: 'User\'s Email', type: () => 'string' })
   readonly email: { type: string, lowercase: true };
 
-  @IsString()
-  @MinLength(5)
-  @ApiProperty({ description: 'User\'s Password (only applies when using username/password)', type: () => 'string' })
-  readonly password?: string;
+  // @IsString()
+  // @MinLength(5)
+  // @ApiProperty({ description: 'User\'s Password (only applies when using username/password)', type: () => 'string' })
+  // readonly password?: string;
 
   @IsString()
   @ApiProperty({ description: 'User\'s Display Name to use in the UI', type: () => 'string' })
@@ -66,4 +67,16 @@ export class UserDto {
   @IsOptional()
   @ApiProperty({ description: 'Microsoft Windows Live User Id when using OAuth2 to Login' })
   readonly windowslive?: string;
+
+  constructor(user: User) {
+    //super(user);
+    this.id = user.id;
+    this.displayName = user.displayName;
+    this.roles = user.roles;
+    this.email = user.email;
+    this.provider = user.provider;
+    this.facebook = user.facebook;
+    this.picture = user.picture;
+    //this.isActive = options?.isActive;
+  }
 }

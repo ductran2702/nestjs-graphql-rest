@@ -42,7 +42,7 @@ export class UserService {
   }
 
   async findOne(userProperty): Promise<User> {
-    return await this.userModel.findOne(userProperty).exec();
+    return this.userModel.findOne(userProperty).exec();
   }
 
   async link(userId: string, token: string, providerName: string) {
