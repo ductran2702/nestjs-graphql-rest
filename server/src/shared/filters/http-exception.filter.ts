@@ -16,7 +16,8 @@ export class HttpExceptionFilter<T extends HttpException> implements ExceptionFi
     const exceptionResponse = exception.getResponse();
     const error = typeof response === 'string' ? { message: exceptionResponse } : (exceptionResponse as Record<string, unknown>);
 
-    if (response && response.hasOwnProperty('status')) {
+    // DUC edited: if (response) { && response.hasOwnProperty('status')) {
+    if (response) {
       response.status(statusCode).json({
         ...error,
         path: request.url,
