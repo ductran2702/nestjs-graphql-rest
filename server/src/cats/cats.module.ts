@@ -6,7 +6,7 @@ import { CatSchema } from './schemas/cats.schema';
 import { CatsService } from './services/cats.service';
 import { GraphqlPassportAuthGuard } from '../shared/guards/graphql-passport-auth.guard';
 import { OwnersService } from './services/owners.service';
-import { UserSchema } from '../shared/schemas/user.schema';
+import { UserSchema } from '../users/schemas/user.schema';
 
 @Module({
   imports: [MongooseModule.forFeature([
