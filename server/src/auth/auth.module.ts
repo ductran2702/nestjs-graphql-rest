@@ -20,6 +20,8 @@ import { WindowsliveStrategy } from './strategies/windowslive.strategy';
 import authConfig from './auth-config.development';
 import { LocalStrategy } from './strategies/local.strategy';
 import { UserSchema } from '../users/schemas/user.schema';
+import { EmailService } from 'src/shared/services/email.service';
+import { ApiConfigService } from 'src/shared/services/api-config.service';
 
 @Module({
   imports: [
@@ -49,6 +51,8 @@ import { UserSchema } from '../users/schemas/user.schema';
     UserService,
     WindowsliveStrategy,
     WindowsliveService,
+    EmailService,
+    ApiConfigService
   ],
   exports: [
     AuthService,

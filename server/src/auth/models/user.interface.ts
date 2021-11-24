@@ -11,7 +11,7 @@ export interface User extends Document {
   readonly providers?: Provider[];
   readonly roles?: string[];
   readonly username?: string;
-  readonly password?: string;
+  password?: string;
   readonly facebook?: string;
   readonly github?: string;
   readonly google?: string;
@@ -20,4 +20,7 @@ export interface User extends Document {
   readonly microsoft?: string;
   readonly twitter?: string;
   readonly windowslive?: string;
+  resetPasswordToken?: string;
+  resetPasswordExpires?: Date;
+
 }

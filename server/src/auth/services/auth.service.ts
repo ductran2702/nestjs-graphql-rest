@@ -2,12 +2,16 @@ import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { sign } from 'jsonwebtoken';
+import * as crypto from 'crypto';
 
 import authConfig from '../auth-config.development';
 import { UserService } from './user.service';
 import { User } from '../models';
 import { UserSignupDto } from '../dto';
 import e = require('express');
+import { ForgotPasswordDto } from '../dto/forgotPassword.dto';
+import { EmailService } from 'src/shared/services/email.service';
+import { ApiConfigService } from 'src/shared/services/api-config.service';
 
 export enum Provider {
   FACEBOOK = 'facebook',
@@ -24,7 +28,12 @@ export class AuthService {
 
   private readonly JWT_SECRET_KEY = authConfig.jwtSecretKey;
 
-  constructor(private jwtService: JwtService, private userService: UserService) { }
+  constructor(
+    private jwtService: JwtService, 
+    private userService: UserService, 
+    private emailService: EmailService,
+    private configService: ApiConfigService,
+  ) { }
 
   async validateOAuthLogin(userProfile: any, provider: Provider): Promise<{ jwt: string; user: User }> {
     try {
@@ -56,9 +65,25 @@ export class AuthService {
     return { token: this.jwtService.sign({ email, displayName, userId, roles }) };
   }
 
+  async forgotPassword(forgotPasswordDto: ForgotPasswordDto): Promise<boolean> {
+    const { email } = forgotPasswordDto;
+    const user = await this.userService.findOne({ email });
+    if (!user) {
+      return true;
+    }
+    const token = this.generateRandomToken();
+    await this.userService.saveResetToken(
+      user,
+      token,
+      new Date(Date.now() + 3_600_000),
+    );
+
+    this.emailService.sendForgotPasswordEmail(email.toString(), token);
+    return true;
+  }
+
   async signup(signupUser: UserSignupDto): Promise<{ token: string }> {
-    const password = await bcrypt.hash(signupUser.password, 10);
-    const createdUser = await this.userService.create({ ...signupUser, password });
+    const createdUser = await this.userService.create(signupUser);
     const { email, displayName, userId } = createdUser;
     return { token: this.jwtService.sign({ email, displayName, userId }) };
   }
@@ -73,5 +98,9 @@ export class AuthService {
 
   private async passwordsAreEqual(hashedPassword: string, plainPassword: string): Promise<boolean> {
     return await bcrypt.compare(plainPassword, hashedPassword);
+  }
+
+  private generateRandomToken(): string {
+    return crypto.randomBytes(20).toString('hex');
   }
 }

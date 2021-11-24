@@ -40,3 +40,6 @@ auth-config.development.ts
 npm-debug.log
 yarn-error.log
 
+.env
+.env.dev
+.env.prod

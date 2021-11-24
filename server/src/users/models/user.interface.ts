@@ -17,4 +17,6 @@ export interface User extends Document {
   readonly microsoft?: string;
   readonly twitter?: string;
   readonly windowslive?: string;
+  readonly resetPasswordToken?: string;
+  readonly resetPasswordExpires?: string;
 }

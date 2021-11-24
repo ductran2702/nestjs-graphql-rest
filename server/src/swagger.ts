@@ -1,7 +1,7 @@
 import { Logger } from '@nestjs/common';
 import { INestApplication } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
-import * as basicAuth from 'express-basic-auth';
+//import * as basicAuth from 'express-basic-auth';
 
 export function setupSwagger(app: INestApplication, appPort: number | string) {
   const uri = 'api';

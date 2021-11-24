@@ -7,6 +7,7 @@ import { AuthService } from './services/auth.service';
 import { UserService } from './services/user.service';
 import { TokenDto, UserDto, UsernameDto, UserSignupDto } from './dto';
 import { UserLoginDto } from './dto/userLogin.dto';
+import { ForgotPasswordDto } from './dto/forgotPassword.dto';
 
 @ApiTags('Authorization API')
 @ApiBearerAuth()
@@ -135,11 +136,17 @@ export class AuthController {
     }
   }
 
-  @ApiOperation({ summary: 'Login Current User' })
+  @ApiOperation({ summary: 'Login' })
   @UseGuards(AuthGuard('local'))
   @Post('login')
   async login(@Request() req, @Body() userLoginDto: UserLoginDto) {
     return await this.authService.login(req.user);
+  }
+
+  @ApiOperation({ summary: 'Forgot password' })
+  @Post('forgot-password')
+  async forgotPassword(@Body() forgotPassword: ForgotPasswordDto) {
+    return await this.authService.forgotPassword(forgotPassword);
   }
 
   @ApiOperation({ summary: 'Logout Current User' })

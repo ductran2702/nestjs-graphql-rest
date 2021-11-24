@@ -69,4 +69,15 @@ export class UserService {
   //   user.displayName = updatedUser.displayName;
   //   user.email = updatedUser.email;
   // }
+
+  saveResetToken(
+    user: User,
+    token: string,
+    resetPasswordExpires: Date,
+  ): Promise<User> {
+    user.resetPasswordToken = token;
+    user.resetPasswordExpires = resetPasswordExpires; // 1 hour
+
+    return user.save();
+  }
 }

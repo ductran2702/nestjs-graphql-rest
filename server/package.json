@@ -39,6 +39,7 @@
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.11.10",
     "nest-access-control": "^2.0.2",
+    "nodemailer": "^6.7.1",
     "oauth": "^0.9.15",
     "passport": "^0.4.1",
     "passport-azure-ad": "^4.3.0",
