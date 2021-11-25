@@ -2,6 +2,13 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type PageInfo {
+  hasNextPage: Boolean
+  hasPreviousPage: Boolean
+  endCursor: String
+  startCursor: String
+}
+
 type Owner {
   id: ID!
   displayName: String!
@@ -14,13 +21,6 @@ type Cat {
   age: Int!
   breed: String!
   owner: Owner
-}
-
-type PageInfo {
-  hasNextPage: Boolean
-  hasPreviousPage: Boolean
-  endCursor: String
-  startCursor: String
 }
 
 type Provider {

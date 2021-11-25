@@ -1,4 +1,3 @@
-
 export interface FilterBy {
   field: string;
 

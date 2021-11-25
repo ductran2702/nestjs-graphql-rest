@@ -1,29 +1,38 @@
 import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
-import { decode } from 'jsonwebtoken';
 import * as bcrypt from 'bcryptjs';
+import { decode } from 'jsonwebtoken';
+import { Model, Types } from 'mongoose';
 
-import { User } from '../models/user.interface';
-import { UserSignupDto } from '../dto/userSignup.dto';
-import { ResetPasswordDto } from '../dto/resetPassword.dto';
 import { UserDto } from '../dto';
+import type { ResetPasswordDto } from '../dto/resetPassword.dto';
+import type { UserSignupDto } from '../dto/userSignup.dto';
+import type { User } from '../models/user.interface';
+
 @Injectable()
 export class UserService {
   constructor(
     @InjectModel('User')
     private readonly userModel: Model<User>,
-  ) { }
+  ) {}
 
   async create(newUser: User | UserSignupDto): Promise<User> {
     const objectId = Types.ObjectId();
     const roles = ['USER'];
     const userCount = await this.count();
+
     if (userCount === 0) {
       roles.push('ADMIN'); // the very first user will automatically get the ADMIN role
     }
+
     const userId = (newUser as User)?.userId || objectId.toString(); // copy over the same _id when userId isn't provided (by local signup users)
-    const createdUser = new this.userModel({ ...newUser, roles, _id: objectId, userId });
+    const createdUser = new this.userModel({
+      ...newUser,
+      roles,
+      _id: objectId,
+      userId,
+    });
+
     return await createdUser.save();
   }
 
@@ -37,13 +46,15 @@ export class UserService {
 
   async findById(id: string): Promise<User> {
     const user = await this.userModel?.findById(id).exec();
+
     if (!user) {
       throw new NotFoundException('Could not find user.');
     }
+
     return user;
   }
 
-  async findOne(userProperty): Promise<User> {
+  async findOne(userProperty): Promise<User | null> {
     return this.userModel.findOne(userProperty).exec();
   }
 
@@ -51,19 +62,31 @@ export class UserService {
     let result;
     const decodedToken = decode(token) as User;
     const user = await this.userModel.findOne({ userId });
-    console.log('link user2', (user && decodedToken && providerName), user)
+    console.log('link user2', user && decodedToken && providerName, user);
+
     if (user && decodedToken && providerName) {
       user[providerName] = decodedToken[userId];
-      user.providers.push({ providerId: decodedToken.userId, name: providerName });
+      user.providers?.push({
+        providerId: decodedToken.userId as string,
+        name: providerName,
+      });
       result = await user.save();
     }
+
     return result;
   }
 
   async unlink(userId: string, providerName: string) {
-    console.log('unlink userId', userId)
-    const result = await this.userModel.findOneAndUpdate({ userId }, { $unset: { [providerName]: true }, $pull: { 'providers': { name: providerName } } }, { new: true });
-    return result;
+    console.log('unlink userId', userId);
+
+    return await this.userModel.findOneAndUpdate(
+      { userId },
+      {
+        $unset: { [providerName]: true },
+        $pull: { providers: { name: providerName } },
+      },
+      { new: true },
+    );
   }
 
   // async updateMe(updatedUser: User) {
@@ -100,7 +123,7 @@ export class UserService {
       );
     }
 
-    user.password = resetPasswordDto.password;
+    user.password = resetPasswordDto.newPassword;
     user.resetPasswordToken = null;
     user.resetPasswordExpires = null;
 
@@ -118,10 +141,14 @@ export class UserService {
     return user.save();
   }
 
-  async validateHash(plainPassword: string, hashedPassword: string): Promise<boolean> {
+  async validateHash(
+    plainPassword: string,
+    hashedPassword: string | null | undefined,
+  ): Promise<boolean> {
     if (!plainPassword || !hashedPassword) {
       return Promise.resolve(false);
     }
+
     return await bcrypt.compare(plainPassword, hashedPassword);
   }
 
@@ -137,6 +164,7 @@ export class UserService {
         401,
       );
     }
+
     user.isEmailConfirmed = true;
     user.verifyEmailExpires = null;
     user.verifyEmailToken = null;

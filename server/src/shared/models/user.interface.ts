@@ -1,5 +1,6 @@
-import { Document } from 'mongoose';
-import { Provider } from './provider.interface';
+import type { Document } from 'mongoose';
+
+import type { Provider } from './provider.interface';
 
 export interface User extends Document {
   readonly userId?: string;

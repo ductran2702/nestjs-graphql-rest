@@ -1,8 +1,12 @@
-import { IsString, IsEmail, MinLength } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import { IsEmail, IsOptional, IsPhoneNumber } from 'class-validator';
 
 export class ForgotPasswordDto {
   @IsEmail()
-  @ApiProperty({ example: 'someone@yopmail.com', description: 'User\'s Email', type: () => 'string' })
-  readonly email: { type: string, lowercase: true };
+  @ApiPropertyOptional({
+    example: 'golfai@yopmail.com',
+    description: "User's Email",
+    type: () => 'string',
+  })
+  readonly email: { type: string; lowercase: true };
 }

@@ -1,11 +1,16 @@
-import { IsString, IsEmail, IsOptional, MinLength } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { Provider, User } from '../models';
+import { IsEmail, IsOptional, IsString, MinLength } from 'class-validator';
+
+import type { Provider, User } from '../models';
 
 export class UserDto {
   @IsEmail()
-  @ApiProperty({ example: 'someone@company.com', description: 'User\'s Email', type: () => 'string' })
-  readonly email: { type: string, lowercase: true };
+  @ApiProperty({
+    example: 'someone@company.com',
+    description: "User's Email",
+    type: () => 'string',
+  })
+  readonly email: { type: string; lowercase: true };
 
   // @IsString()
   // @MinLength(5)
@@ -13,7 +18,10 @@ export class UserDto {
   // readonly password?: string;
 
   @IsString()
-  @ApiProperty({ description: 'User\'s Display Name to use in the UI', type: () => 'string' })
+  @ApiProperty({
+    description: "User's Display Name to use in the UI",
+    type: () => 'string',
+  })
   readonly displayName: string;
 
   readonly id?: string;
@@ -22,22 +30,33 @@ export class UserDto {
   readonly userId?: string;
 
   @IsOptional()
-  @ApiProperty({ description: 'User\'s Profile Picture URL', type: () => 'string' })
+  @ApiProperty({
+    description: "User's Profile Picture URL",
+    type: () => 'string',
+  })
   readonly picture?: string;
 
   @IsOptional()
-  @ApiProperty({ description: 'User\'s Original OAuth2 Provider', type: () => 'string' })
+  @ApiProperty({
+    description: "User's Original OAuth2 Provider",
+    type: () => 'string',
+  })
   readonly provider?: string;
 
   @IsOptional()
-  @ApiProperty({ description: 'User\'s Original OAuth2 Provider', type: () => 'Provider[]' })
+  @ApiProperty({
+    description: "User's Original OAuth2 Provider",
+    type: () => 'Provider[]',
+  })
   readonly providers?: Provider[];
 
-  @ApiProperty({ description: 'User\'s Role(s)' })
+  @ApiProperty({ description: "User's Role(s)" })
   readonly roles: string[];
 
   @IsOptional()
-  @ApiProperty({ description: 'User\'s Username (only applies when using username/password)' })
+  @ApiProperty({
+    description: "User's Username (only applies when using username/password)",
+  })
   readonly username?: string;
 
   @IsOptional()
@@ -57,7 +76,9 @@ export class UserDto {
   readonly linkedin?: string;
 
   @IsOptional()
-  @ApiProperty({ description: 'Microsoft Windows Live User Id when using OAuth2 to Login' })
+  @ApiProperty({
+    description: 'Microsoft Windows Live User Id when using OAuth2 to Login',
+  })
   readonly live?: string;
 
   @IsOptional()
@@ -69,7 +90,9 @@ export class UserDto {
   readonly twitter?: string;
 
   @IsOptional()
-  @ApiProperty({ description: 'Microsoft Windows Live User Id when using OAuth2 to Login' })
+  @ApiProperty({
+    description: 'Microsoft Windows Live User Id when using OAuth2 to Login',
+  })
   readonly windowslive?: string;
 
   @IsOptional()

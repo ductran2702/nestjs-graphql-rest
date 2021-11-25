@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
+import type { VerifiedCallback } from 'passport-jwt';
 import { Strategy } from 'passport-microsoft';
-import { VerifiedCallback } from 'passport-jwt';
 
 import authConfig from '../auth-config.development';
 import { AuthService, Provider } from '../services/auth.service';
@@ -18,10 +18,16 @@ export class MicrosoftStrategy extends PassportStrategy(Strategy, 'microsoft') {
     });
   }
 
-  async validate(req: any, accessToken: string, refreshToken: string, profile: any, done: VerifiedCallback) {
+  async validate(
+    req: any,
+    accessToken: string,
+    refreshToken: string,
+    profile: any,
+    done: VerifiedCallback,
+  ) {
     try {
-      Logger.log(`Microsoft UserProfile`, 'Auth');
-      const jsonProfile = profile && profile._json || {};
+      Logger.log('Microsoft UserProfile', 'Auth');
+      const jsonProfile = (profile && profile._json) || {};
 
       const userProfile = {
         userId: jsonProfile.id,
@@ -33,10 +39,16 @@ export class MicrosoftStrategy extends PassportStrategy(Strategy, 'microsoft') {
       };
 
       // console.log('userProfile::', profile)
-      const oauthResponse = await this.authService.validateOAuthLogin(userProfile, Provider.MICROSOFT);
-      done(null, { ...JSON.parse(JSON.stringify(oauthResponse.user)), jwt: oauthResponse.jwt });
-    } catch (err) {
-      done(err, false);
+      const oauthResponse = await this.authService.validateOAuthLogin(
+        userProfile,
+        Provider.MICROSOFT,
+      );
+      done(null, {
+        ...JSON.parse(JSON.stringify(oauthResponse.user)),
+        jwt: oauthResponse.jwt,
+      });
+    } catch (error) {
+      done(error, false);
     }
   }
 }

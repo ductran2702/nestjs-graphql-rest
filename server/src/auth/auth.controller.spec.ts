@@ -1,4 +1,6 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
+
 import { AuthController } from './auth.controller';
 
 describe('Auth Controller', () => {
@@ -9,7 +11,8 @@ describe('Auth Controller', () => {
     }).compile();
   });
   it('should be defined', () => {
-    const controller: AuthController = module.get<AuthController>(AuthController);
+    const controller: AuthController =
+      module.get<AuthController>(AuthController);
     expect(controller).toBeDefined();
   });
 });

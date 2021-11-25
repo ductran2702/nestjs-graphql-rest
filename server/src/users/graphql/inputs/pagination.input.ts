@@ -1,12 +1,13 @@
 import { ArgsType, Field, Int } from '@nestjs/graphql';
+
 import { StringQueryArgs } from '../../../shared/graphql/inputs';
 
 @ArgsType()
 export class UserQueryArgs extends StringQueryArgs {
-  @Field(type => Int)
+  @Field((type) => Int)
   first: number;
 
-  @Field(type => Int)
+  @Field((type) => Int)
   offset: number;
 
   @Field({ nullable: true })

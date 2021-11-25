@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as nodemailer from 'nodemailer';
 import type * as Mail from 'nodemailer/lib/mailer';
-import { VerificationTokenPayloadDto } from 'src/auth/dto/verificationTokenPayload.dto';
+import { VerificationTokenPayloadDto } from '../../auth/dto/verificationTokenPayload.dto';
 
 import { ApiConfigService } from './api-config.service';
 
@@ -10,10 +10,7 @@ import { ApiConfigService } from './api-config.service';
 export class EmailService {
   private nodemailerTransport: Mail;
 
-  constructor(
-    private readonly configService: ApiConfigService,
-    private readonly jwtService: JwtService,
-  ) {
+  constructor(private readonly configService: ApiConfigService) {
     this.nodemailerTransport = nodemailer.createTransport({
       host: this.configService.emailConfig.host,
       port: this.configService.emailConfig.port,
@@ -48,7 +45,10 @@ export class EmailService {
     });
   }
 
-  async sendVerificationLinkEmail(email: string, token: string): Promise<boolean> {
+  async sendVerificationLinkEmail(
+    email: string,
+    token: string,
+  ): Promise<boolean> {
     const hasInfo = await this.sendEmail({
       from: '"Company" <' + this.configService.emailConfig.from + '>',
       to: email, // list of receivers (separated by ,)

@@ -1,4 +1,5 @@
-import { ObjectType, Field, ID } from '@nestjs/graphql';
+import { Field, ID, ObjectType } from '@nestjs/graphql';
+
 import { Provider } from './provider.type';
 
 @ObjectType()
@@ -21,10 +22,10 @@ export class User {
   @Field({ nullable: true })
   readonly provider: string;
 
-  @Field(type => [Provider], { nullable: true })
+  @Field((type) => [Provider], { nullable: true })
   readonly providers: Provider[];
 
-  @Field(type => [String])
+  @Field((type) => [String])
   readonly roles: string[];
 
   @Field({ nullable: true })

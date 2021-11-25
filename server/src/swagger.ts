@@ -1,6 +1,6 @@
+import type { INestApplication } from '@nestjs/common';
 import { Logger } from '@nestjs/common';
-import { INestApplication } from '@nestjs/common';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 //import * as basicAuth from 'express-basic-auth';
 
 export function setupSwagger(app: INestApplication, appPort: number | string) {
@@ -22,5 +22,8 @@ export function setupSwagger(app: INestApplication, appPort: number | string) {
 
   const document = SwaggerModule.createDocument(app, options);
   SwaggerModule.setup(uri, app, document);
-  Logger.log(`Load API Documentation at http://localhost:${appPort}/${uri}`, 'Swagger');
+  Logger.log(
+    `Load API Documentation at http://localhost:${appPort}/${uri}`,
+    'Swagger',
+  );
 }

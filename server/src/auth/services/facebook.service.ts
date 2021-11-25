@@ -1,7 +1,7 @@
+import { rejects } from 'assert';
 import { OAuth2 } from 'oauth';
 
 import authConfig from '../auth-config.development';
-import { rejects } from 'assert';
 
 export class FacebookService {
   oauth;
@@ -13,7 +13,8 @@ export class FacebookService {
       'https://graph.facebook.com',
       null,
       'oauth2/token',
-      null);
+      null,
+    );
   }
 
   getImage(token: string): Promise<any> {
@@ -25,8 +26,9 @@ export class FacebookService {
           if (err) {
             reject(err);
           }
+
           const result = JSON.parse(results || {});
-          const data = result && result.data || {};
+          const data = (result && result.data) || {};
           resolve(data);
         },
       );

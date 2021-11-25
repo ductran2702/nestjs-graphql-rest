@@ -1,33 +1,52 @@
-import { Body, Controller, Get, Param, Res, Req, Request, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Req,
+  Request,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { UserNotFoundException } from 'shared/exceptions/user-not-found.exception';
 
 import authConfig from './auth-config.development';
+import { TokenDto, UserDto, UsernameDto, UserSignupDto } from './dto';
+import { ConfirmEmailDto } from './dto/confirmEmail.dto';
+import { ForgotPasswordDto } from './dto/forgotPassword.dto';
+import { ResendConfirmEmailDto } from './dto/resendConfirmEmail.dto';
+import { ResetPasswordDto } from './dto/resetPassword.dto';
+import { UserLoginDto } from './dto/userLogin.dto';
 import { AuthService } from './services/auth.service';
 import { UserService } from './services/user.service';
-import { TokenDto, UserDto, UsernameDto, UserSignupDto } from './dto';
-import { UserLoginDto } from './dto/userLogin.dto';
-import { ForgotPasswordDto } from './dto/forgotPassword.dto';
-import { ResetPasswordDto } from './dto/resetPassword.dto';
-import { ConfirmEmailDto } from './dto/confirmEmail.dto';
-import { ResendConfirmEmailDto } from './dto/resendConfirmEmail.dto';
 
 @ApiTags('Authorization API')
 @ApiBearerAuth()
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService, private readonly userService: UserService) { }
+  constructor(
+    private authService: AuthService,
+    private readonly userService: UserService,
+  ) {}
 
   @Get('facebook')
   @UseGuards(AuthGuard('facebook'))
   @ApiOperation({ summary: 'Initiates the Facebook OAuth2 login flow' })
-  facebookLogin() { }
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  facebookLogin() {}
 
   @Get('facebook/callback')
   @UseGuards(AuthGuard('facebook'))
-  @ApiOperation({ summary: 'Handles the Facebook OAuth2 callback and return User Info when Successful' })
+  @ApiOperation({
+    summary:
+      'Handles the Facebook OAuth2 callback and return User Info when Successful',
+  })
   facebookLoginCallback(@Req() req, @Res() res) {
     const jwt: string = req.user.jwt;
+
     if (jwt) {
       res.redirect(`${authConfig.callbackSuccessUrl}?code=${jwt}`);
     } else {
@@ -179,7 +198,9 @@ export class AuthController {
 
   @ApiOperation({ summary: 'Resend confirmation email' })
   @Post('resend-confirm-email')
-  async resendConfirmEmail(@Body() resendConfirmEmailDto: ResendConfirmEmailDto) {
+  async resendConfirmEmail(
+    @Body() resendConfirmEmailDto: ResendConfirmEmailDto,
+  ) {
     return await this.authService.resendConfirmEmail(resendConfirmEmailDto);
   }
 
@@ -199,23 +220,44 @@ export class AuthController {
   @Post('link/:providerName')
   @UseGuards(AuthGuard('jwt'))
   providerLink(@Param() params, @Body() tokenDto: TokenDto, @Request() req) {
-    console.log('link::', req.user, 'providerName::', params.providerName, ' - token::', tokenDto)
-    return this.userService.link(req.user.userId, tokenDto.token, params.providerName);
+    console.log(
+      'link::',
+      req.user,
+      'providerName::',
+      params.providerName,
+      '- token::',
+      tokenDto,
+    );
+
+    return this.userService.link(
+      req.user.userId,
+      tokenDto.token,
+      params.providerName,
+    );
   }
 
   @ApiOperation({ summary: 'Unlink an OAuth Provider from a User' })
   @Get('unlink/:providerName')
   @UseGuards(AuthGuard('jwt'))
   unlink(@Param() params, @Request() req) {
-    console.log('user is', req.user)
-    return this.userService.unlink(req.user.userId, params.providerName)
+    console.log('user is', req.user);
+
+    return this.userService.unlink(req.user.userId, params.providerName);
   }
 
-  @ApiOperation({ summary: 'Get User\'s Information' })
+  @ApiOperation({ summary: "Get User's Information" })
   @UseGuards(AuthGuard('jwt'))
   @Get('me')
-  async getProfile(@Request() req) : Promise<UserDto>{
-    const user = await this.userService.findOne({ $or: [ { 'providers.providerId': req.user.userId }, { userId: req.user.userId } ] } );
+  async getProfile(@Request() req): Promise<UserDto> {
+    const user = await this.userService.findOne({
+      $or: [
+        { 'providers.providerId': req.user.userId },
+        { userId: req.user.userId },
+      ],
+    });
+    if (!user) {
+      throw new UserNotFoundException();
+    }
     return new UserDto(user);
   }
 }

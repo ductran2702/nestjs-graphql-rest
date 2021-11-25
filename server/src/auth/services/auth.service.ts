@@ -1,21 +1,24 @@
-import { BadRequestException, HttpException, Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { sign } from 'jsonwebtoken';
 import * as crypto from 'crypto';
+import { sign } from 'jsonwebtoken';
+import { UserNotFoundException } from '../../shared/exceptions/user-not-found.exception';
+import { EmailService } from '../../shared/services/email.service';
 
 import authConfig from '../auth-config.development';
+import type { UserSignupDto } from '../dto';
+import type { ConfirmEmailDto } from '../dto/confirmEmail.dto';
+import type { ForgotPasswordDto } from '../dto/forgotPassword.dto';
+import type { ResendConfirmEmailDto } from '../dto/resendConfirmEmail.dto';
+import type { ResetPasswordDto } from '../dto/resetPassword.dto';
+import type { VerificationTokenPayloadDto } from '../dto/verificationTokenPayload.dto';
+import type { User } from '../models';
 import { UserService } from './user.service';
-import { User } from '../models';
-import { UserDto, UserSignupDto } from '../dto';
-import e = require('express');
-import { ForgotPasswordDto } from '../dto/forgotPassword.dto';
-import { EmailService } from 'src/shared/services/email.service';
-import { ApiConfigService } from 'src/shared/services/api-config.service';
-import { ResetPasswordDto } from '../dto/resetPassword.dto';
-import { VerificationTokenPayloadDto } from '../dto/verificationTokenPayload.dto';
-import { UserNotFoundException } from 'src/shared/exceptions/user-not-found.exception';
-import { ConfirmEmailDto } from '../dto/confirmEmail.dto';
-import { ResendConfirmEmailDto } from '../dto/resendConfirmEmail.dto';
 
 export enum Provider {
   FACEBOOK = 'facebook',
@@ -29,74 +32,113 @@ export enum Provider {
 
 @Injectable()
 export class AuthService {
-
   private readonly JWT_SECRET_KEY = authConfig.jwtSecretKey;
 
   constructor(
-    private jwtService: JwtService, 
-    private userService: UserService, 
-    private emailService: EmailService,
-    private configService: ApiConfigService,
-  ) { }
+    private jwtService: JwtService,
+    private userService: UserService,
+    private emailService: EmailService
+  ) {}
 
-  async validateOAuthLogin(userProfile: any, provider: Provider): Promise<{ jwt: string; user: User }> {
+  async validateOAuthLogin(
+    userProfile: any,
+    provider: Provider,
+  ): Promise<{ jwt: string; user: User }> {
     try {
       // find user in MongoDB and if not found then create it in the DB
-      let existingUser = await this.userService.findOne({ [provider]: userProfile.userId });
+      let existingUser = await this.userService.findOne({
+        [provider]: userProfile.userId,
+      });
+
       if (!existingUser) {
-        existingUser = await this.userService.create({ ...userProfile, provider, providers: [{ providerId: userProfile.userId, name: provider }] });
+        existingUser = await this.userService.create({
+          ...userProfile,
+          provider,
+          providers: [{ providerId: userProfile.userId, name: provider }],
+        });
       }
 
-      const { userId, email, displayName, picture, providers, roles } = existingUser;
-      const signingPayload = { userId, email, displayName, picture, providers, roles };
-      const jwt: string = sign(signingPayload, this.JWT_SECRET_KEY, { expiresIn: 3600 });
+      const { userId, email, displayName, picture, providers, roles } =
+        existingUser;
+      const signingPayload = {
+        userId,
+        email,
+        displayName,
+        picture,
+        providers,
+        roles,
+      };
+      const jwt: string = sign(signingPayload, this.JWT_SECRET_KEY, {
+        expiresIn: 3600,
+      });
+
       return { jwt, user: existingUser };
-    } catch (err) {
-      throw new InternalServerErrorException('validateOAuthLogin', err.message);
+    } catch (error) {
+      throw new InternalServerErrorException(
+        'validateOAuthLogin',
+        error.message,
+      );
     }
   }
 
-  async validateUser(email: string, pass: string): Promise<User> {
+  async validateUser(email: string, pass: string): Promise<User | null> {
     const user = await this.userService.findOne({ email });
+
     if (user && (await this.userService.validateHash(pass, user.password))) {
       return user;
     }
+
     return null;
   }
 
   async login(user: User): Promise<{ token: string }> {
     const { email, displayName, userId, roles } = user;
-    
+
     if (user.isEmailConfirmed === undefined || !user.isEmailConfirmed) {
       throw new BadRequestException('Email not confirmed yet');
     }
 
-    return { token: this.jwtService.sign({ email, displayName, userId, roles }) };
+    return {
+      token: this.jwtService.sign({ email, displayName, userId, roles }),
+    };
   }
 
   async forgotPassword(forgotPasswordDto: ForgotPasswordDto): Promise<boolean> {
     const { email } = forgotPasswordDto;
-    const user = await this.userService.findOne({ email });
+
+    const user = await this.userService.findOne(email);
+
     if (!user) {
       return true;
     }
+
     const token = this.randomString(20);
     await this.userService.saveResetToken(
       user,
       token,
       new Date(Date.now() + 3_600_000),
     );
+    await this.emailService.sendForgotPasswordEmail(email.toString(), token);
 
-    this.emailService.sendForgotPasswordEmail(email.toString(), token);
     return true;
   }
 
   async resetPassword(resetPasswordDto: ResetPasswordDto): Promise<boolean> {
-    const { email } = resetPasswordDto;
-    const user = await this.userService.findOne({
-      email,
-      resetPasswordExpires: { $gte: new Date() } ,
-    });
+    const { email, phone } = resetPasswordDto;
+    const filter = {
+      resetPasswordExpires: { $gte: new Date() },
+    } as any;
+
+    if (email) {
+      filter.email = email;
+    } else if (phone) {
+      filter.phone = phone;
+    } else {
+      throw new HttpException('Not provide email neither phone', 401);
+    }
+
+    const user = await this.userService.findOne(filter);
+
     if (!user) {
       throw new HttpException(
         'Password reset token is invalid or has expired',
@@ -125,13 +167,20 @@ export class AuthService {
 
     this.emailService.sendVerificationLinkEmail(email.toString(), token);
 
-    return { token: this.jwtService.sign({ email, displayName, userId, roles }) };
+    return {
+      token: this.jwtService.sign({ email, displayName, userId, roles }),
+    };
   }
 
   async confirmEmail(confirmEmailDto: ConfirmEmailDto): Promise<boolean> {
-    const { email, verifyEmailToken } = await this.decodeConfirmationToken(confirmEmailDto.token);
+    const { email, verifyEmailToken } = await this.decodeConfirmationToken(
+      confirmEmailDto.token,
+    );
 
-    const user = await this.userService.findOne({ email, verifyEmailExpires: { $gte: new Date() } });
+    const user = await this.userService.findOne({
+      email,
+      verifyEmailExpires: { $gte: new Date() },
+    });
 
     if (!user) {
       throw new HttpException(
@@ -149,8 +198,12 @@ export class AuthService {
     return true;
   }
 
-  async resendConfirmEmail(resendConfirmEmailDto: ResendConfirmEmailDto): Promise<boolean> {
-    const user = await this.userService.findOne({ email: resendConfirmEmailDto.email });
+  async resendConfirmEmail(
+    resendConfirmEmailDto: ResendConfirmEmailDto,
+  ): Promise<boolean> {
+    const user = await this.userService.findOne({
+      email: resendConfirmEmailDto.email,
+    });
 
     if (!user) {
       throw new UserNotFoundException();
@@ -161,7 +214,10 @@ export class AuthService {
     }
 
     const verifyEmailToken = this.randomString(20);
-    const payload: VerificationTokenPayloadDto = { email: user.email, verifyEmailToken };
+    const payload: VerificationTokenPayloadDto = {
+      email: user.email,
+      verifyEmailToken,
+    };
     const token = this.jwtService.sign(payload);
 
     await this.userService.saveVerifyToken(
@@ -170,7 +226,10 @@ export class AuthService {
       new Date(Date.now() + 3_600_000), // 1 hour
     );
 
-    await this.emailService.sendVerificationLinkEmail(user.email.toString(), token);
+    await this.emailService.sendVerificationLinkEmail(
+      user.email.toString(),
+      token,
+    );
 
     return true;
   }
@@ -179,7 +238,9 @@ export class AuthService {
     if (!user || !user.email) {
       return false;
     }
+
     const userFound = await this.userService.findOne({ email: user.email });
+
     return !userFound;
   }
 
@@ -187,16 +248,40 @@ export class AuthService {
     if (size === 0) {
       throw new Error('Zero-length randomString is useless.');
     }
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' + 'abcdefghijklmnopqrstuvwxyz' + '0123456789';
+
+    const chars =
+      'ABCDEFGHIJKLMNOPQRSTUVWXYZ' +
+      'abcdefghijklmnopqrstuvwxyz' +
+      '0123456789';
     let objectId = '';
     const bytes = crypto.randomBytes(size);
+
     for (let i = 0; i < bytes.length; ++i) {
       objectId += chars[bytes.readUInt8(i) % chars.length];
     }
+
     return objectId;
   }
 
-  async decodeConfirmationToken(token: string): Promise<VerificationTokenPayloadDto> {
+  private randomNumber(size: number): string {
+    if (size === 0) {
+      throw new Error('Zero-length randomNumber is useless.');
+    }
+
+    const chars = '0123456789';
+    let objectId = '';
+    const bytes = crypto.randomBytes(size);
+
+    for (let i = 0; i < bytes.length; ++i) {
+      objectId += chars[bytes.readUInt8(i) % chars.length];
+    }
+
+    return objectId;
+  }
+
+  async decodeConfirmationToken(
+    token: string,
+  ): Promise<VerificationTokenPayloadDto> {
     try {
       const payload = this.jwtService.verify(token);
 

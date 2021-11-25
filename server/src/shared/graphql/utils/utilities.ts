@@ -1,21 +1,27 @@
 import { Operator } from '../../models';
-import { FilterByString } from '../types';
+import type { FilterByString } from '../types';
 
-interface FilterByResult {
-  [operator: string]: string;
-}
+type FilterByResult = Record<string, string>;
 
 export function getFilterByQuery(filterBy: FilterByString[]) {
   const filterObj = {};
+
   if (Array.isArray(filterBy)) {
-    filterBy.forEach(filter => {
-      filterObj[filter.field] = getFilterByOperator(filter.operator, filter.value);
-    });
+    for (const filter of filterBy) {
+      filterObj[filter.field] = getFilterByOperator(
+        filter.operator,
+        filter.value,
+      );
+    }
   }
+
   return filterObj;
 }
 
-export function getFilterByOperator(operator: Operator, searchValue: string | number | boolean): FilterByResult {
+export function getFilterByOperator(
+  operator: Operator,
+  searchValue: string | number | boolean,
+): FilterByResult {
   let operation;
 
   switch (operator) {
@@ -38,11 +44,13 @@ export function getFilterByOperator(operator: Operator, searchValue: string | nu
       operation = { $lt: searchValue };
       break;
     case Operator.IN:
-      const inValues = typeof searchValue === 'string' ? searchValue.split(',') : searchValue;
+      const inValues =
+        typeof searchValue === 'string' ? searchValue.split(',') : searchValue;
       operation = { $in: inValues || [] };
       break;
     case Operator.NIN:
-      const notInValues = typeof searchValue === 'string' ? searchValue.split(',') : searchValue;
+      const notInValues =
+        typeof searchValue === 'string' ? searchValue.split(',') : searchValue;
       operation = { $nin: notInValues || [] };
       break;
     case Operator.EndsWith:
@@ -56,5 +64,6 @@ export function getFilterByOperator(operator: Operator, searchValue: string | nu
       operation = { $regex: new RegExp(`.*${searchValue}.*`, 'i') };
       break;
   }
+
   return operation;
 }

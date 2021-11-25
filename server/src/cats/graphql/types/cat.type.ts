@@ -1,4 +1,5 @@
-import { ObjectType, Field, Int, ID } from '@nestjs/graphql';
+import { Field, ID, Int, ObjectType } from '@nestjs/graphql';
+
 import { Owner } from './owner.type';
 
 @ObjectType()
@@ -15,6 +16,6 @@ export class Cat {
   @Field()
   readonly breed: string;
 
-  @Field(type => Owner, { nullable: true })
+  @Field((type) => Owner, { nullable: true })
   readonly owner?: Owner;
 }

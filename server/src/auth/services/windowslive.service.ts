@@ -12,7 +12,8 @@ export class WindowsliveService {
       'https://graph.microsoft.com',
       null,
       'oauth2/token',
-      null);
+      null,
+    );
   }
 
   getImage(token): Promise<any> {
@@ -25,7 +26,8 @@ export class WindowsliveService {
           if (err) {
             reject(err);
           }
-          console.log('getImage result:', results, err, res)
+
+          console.log('getImage result:', results, err, res);
           resolve(results);
           // results = JSON.parse(results);
         },

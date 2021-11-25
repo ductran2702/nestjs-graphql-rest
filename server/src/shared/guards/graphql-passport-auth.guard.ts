@@ -1,4 +1,5 @@
-import { Injectable, ExecutionContext } from '@nestjs/common';
+import type { ExecutionContext } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { AuthGuard } from '@nestjs/passport';
 
@@ -8,6 +9,7 @@ export class GraphqlPassportAuthGuard extends AuthGuard('jwt') {
 
   constructor(roles?: string | string[]) {
     super();
+
     if (roles) {
       this._roles = Array.isArray(roles) ? roles : [roles];
     }
@@ -26,21 +28,26 @@ export class GraphqlPassportAuthGuard extends AuthGuard('jwt') {
         }
       }
     }
+
     return false;
   }
 
   getRequest(context: ExecutionContext) {
     const ctx = GqlExecutionContext.create(context);
-    const req = ctx.getContext().req;
-    return req;
+
+    return ctx.getContext().req;
   }
 
   private hasAccess(roles, requiredRole): boolean {
     if (Array.isArray(roles)) {
-      const adminFoundIndex = roles.findIndex((role: string) => role.toUpperCase() === requiredRole);
+      const adminFoundIndex = roles.findIndex(
+        (role: string) => role.toUpperCase() === requiredRole,
+      );
+
       if (adminFoundIndex >= 0) {
         return true;
       }
     }
+    return false;
   }
 }

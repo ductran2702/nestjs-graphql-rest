@@ -1,8 +1,12 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { IsEmail } from "class-validator";
+import { ApiProperty } from '@nestjs/swagger';
+import { IsEmail } from 'class-validator';
 
 export class ResendConfirmEmailDto {
   @IsEmail()
-  @ApiProperty({ example: 'someone@yopmail.com', description: 'User\'s Email', type: () => 'string' })
+  @ApiProperty({
+    example: 'golfai@yopmail.com',
+    description: "User's Email",
+    type: () => 'string',
+  })
   readonly email: string;
 }
