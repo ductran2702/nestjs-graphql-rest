@@ -1,6 +1,6 @@
 import { IsString, IsEmail, IsOptional, MinLength } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { User } from '../models';
+import { Provider, User } from '../models';
 
 export class UserDto {
   @IsEmail()
@@ -28,6 +28,10 @@ export class UserDto {
   @IsOptional()
   @ApiProperty({ description: 'User\'s Original OAuth2 Provider', type: () => 'string' })
   readonly provider?: string;
+
+  @IsOptional()
+  @ApiProperty({ description: 'User\'s Original OAuth2 Provider', type: () => 'Provider[]' })
+  readonly providers?: Provider[];
 
   @ApiProperty({ description: 'User\'s Role(s)' })
   readonly roles: string[];
@@ -80,6 +84,7 @@ export class UserDto {
     this.roles = user.roles;
     this.email = user.email;
     this.provider = user.provider;
+    this.providers = user.providers;
     this.facebook = user.facebook;
     this.picture = user.picture;
     this.isEmailConfirmed = user.isEmailConfirmed;
