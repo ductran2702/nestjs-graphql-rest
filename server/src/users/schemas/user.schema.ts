@@ -28,7 +28,10 @@ export const UserSchema = new Schema({
   twitter: String,
   windowslive: String,
   resetPasswordToken: String,
-  resetPasswordExpires: Date
+  resetPasswordExpires: Date,
+  verifyEmailToken: String,
+  verifyEmailExpires: Date,
+  isEmailConfirmed: Boolean,
 }, { timestamps: true });
 
 UserSchema.pre('save', async function(next) {
@@ -42,6 +45,10 @@ UserSchema.pre('save', async function(next) {
   if (user.isModified('resetPasswordToken')) {
     const resetPasswordToken = user.resetPasswordToken ? await bcrypt.hash(user.resetPasswordToken, 10) : null;
     user.resetPasswordToken = resetPasswordToken;
+  }
+  if (user.isModified('verifyEmailToken')) {
+    const verifyEmailToken = user.verifyEmailToken ? await bcrypt.hash(user.verifyEmailToken, 10) : null;
+    user.verifyEmailToken = verifyEmailToken;
   }
   next();
 });

@@ -7,7 +7,7 @@ import * as bcrypt from 'bcryptjs';
 import { User } from '../models/user.interface';
 import { UserSignupDto } from '../dto/userSignup.dto';
 import { ResetPasswordDto } from '../dto/resetPassword.dto';
-
+import { UserDto } from '../dto';
 @Injectable()
 export class UserService {
   constructor(
@@ -22,7 +22,7 @@ export class UserService {
     if (userCount === 0) {
       roles.push('ADMIN'); // the very first user will automatically get the ADMIN role
     }
-    const userId = newUser?.userId || objectId.toString(); // copy over the same _id when userId isn't provided (by local signup users)
+    const userId = (newUser as User)?.userId || objectId.toString(); // copy over the same _id when userId isn't provided (by local signup users)
     const createdUser = new this.userModel({ ...newUser, roles, _id: objectId, userId });
     return await createdUser.save();
   }
@@ -107,10 +107,40 @@ export class UserService {
     return user.save();
   }
 
+  saveVerifyToken(
+    user: User,
+    token: string,
+    verifyEmailExpires: Date,
+  ): Promise<User> {
+    user.verifyEmailToken = token;
+    user.verifyEmailExpires = verifyEmailExpires;
+
+    return user.save();
+  }
+
   async validateHash(plainPassword: string, hashedPassword: string): Promise<boolean> {
     if (!plainPassword || !hashedPassword) {
       return Promise.resolve(false);
     }
     return await bcrypt.compare(plainPassword, hashedPassword);
+  }
+
+  async markEmailAsConfirmed(user: User, verifyEmailToken: string) {
+    const isTokenValid = await this.validateHash(
+      verifyEmailToken,
+      user.verifyEmailToken,
+    );
+
+    if (!isTokenValid) {
+      throw new HttpException(
+        'Verify email token is invalid or has expired',
+        401,
+      );
+    }
+    user.isEmailConfirmed = true;
+    user.verifyEmailExpires = null;
+    user.verifyEmailToken = null;
+
+    return user.save();
   }
 }

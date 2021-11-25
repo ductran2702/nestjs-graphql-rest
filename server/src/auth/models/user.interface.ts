@@ -22,5 +22,7 @@ export interface User extends Document {
   readonly windowslive?: string;
   resetPasswordToken?: string;
   resetPasswordExpires?: Date;
-
+  verifyEmailToken?: string;
+  verifyEmailExpires?: Date;
+  isEmailConfirmed?: boolean;
 }

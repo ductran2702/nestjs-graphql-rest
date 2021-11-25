@@ -68,15 +68,20 @@ export class UserDto {
   @ApiProperty({ description: 'Microsoft Windows Live User Id when using OAuth2 to Login' })
   readonly windowslive?: string;
 
+  @IsOptional()
+  @ApiProperty({ description: 'Email is verified or not' })
+  readonly isEmailConfirmed?: boolean;
+
   constructor(user: User) {
     //super(user);
     this.id = user.id;
+    this.userId = user.userId;
     this.displayName = user.displayName;
     this.roles = user.roles;
     this.email = user.email;
     this.provider = user.provider;
     this.facebook = user.facebook;
     this.picture = user.picture;
-    //this.isActive = options?.isActive;
+    this.isEmailConfirmed = user.isEmailConfirmed;
   }
 }

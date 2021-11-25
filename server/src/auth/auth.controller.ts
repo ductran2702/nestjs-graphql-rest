@@ -9,6 +9,8 @@ import { TokenDto, UserDto, UsernameDto, UserSignupDto } from './dto';
 import { UserLoginDto } from './dto/userLogin.dto';
 import { ForgotPasswordDto } from './dto/forgotPassword.dto';
 import { ResetPasswordDto } from './dto/resetPassword.dto';
+import { ConfirmEmailDto } from './dto/confirmEmail.dto';
+import { ResendConfirmEmailDto } from './dto/resendConfirmEmail.dto';
 
 @ApiTags('Authorization API')
 @ApiBearerAuth()
@@ -16,10 +18,10 @@ import { ResetPasswordDto } from './dto/resetPassword.dto';
 export class AuthController {
   constructor(private authService: AuthService, private readonly userService: UserService) { }
 
-  // @Get('facebook')
-  // @UseGuards(AuthGuard('facebook'))
-  // @ApiOperation({ summary: 'Initiates the Facebook OAuth2 login flow' })
-  // facebookLogin() { }
+  @Get('facebook')
+  @UseGuards(AuthGuard('facebook'))
+  @ApiOperation({ summary: 'Initiates the Facebook OAuth2 login flow' })
+  facebookLogin() { }
 
   @Get('facebook/callback')
   @UseGuards(AuthGuard('facebook'))
@@ -167,6 +169,18 @@ export class AuthController {
   @Post('signup')
   async signup(@Body() signupUser: UserSignupDto) {
     return await this.authService.signup(signupUser);
+  }
+
+  @ApiOperation({ summary: 'Confirm email' })
+  @Post('confirm-email')
+  async confirmEmail(@Body() confirmEmailDto: ConfirmEmailDto) {
+    return await this.authService.confirmEmail(confirmEmailDto);
+  }
+
+  @ApiOperation({ summary: 'Resend confirmation email' })
+  @Post('resend-confirm-email')
+  async resendConfirmEmail(@Body() resendConfirmEmailDto: ResendConfirmEmailDto) {
+    return await this.authService.resendConfirmEmail(resendConfirmEmailDto);
   }
 
   @ApiOperation({ summary: 'Check if Username is Available in the DB' })

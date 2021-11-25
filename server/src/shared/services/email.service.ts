@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import * as nodemailer from 'nodemailer';
 import type * as Mail from 'nodemailer/lib/mailer';
+import { VerificationTokenPayloadDto } from 'src/auth/dto/verificationTokenPayload.dto';
 
 import { ApiConfigService } from './api-config.service';
 
@@ -8,7 +10,10 @@ import { ApiConfigService } from './api-config.service';
 export class EmailService {
   private nodemailerTransport: Mail;
 
-  constructor(public readonly configService: ApiConfigService) {
+  constructor(
+    private readonly configService: ApiConfigService,
+    private readonly jwtService: JwtService,
+  ) {
     this.nodemailerTransport = nodemailer.createTransport({
       host: this.configService.emailConfig.host,
       port: this.configService.emailConfig.port,
@@ -41,5 +46,23 @@ export class EmailService {
         token +
         '>Click here to reset password</a>', // html body
     });
+  }
+
+  async sendVerificationLinkEmail(email: string, token: string): Promise<boolean> {
+    const hasInfo = await this.sendEmail({
+      from: '"Company" <' + this.configService.emailConfig.from + '>',
+      to: email, // list of receivers (separated by ,)
+      subject: 'Verify Email',
+      text: 'Verify Email',
+      html:
+        'Hi! <br><br> Thanks for your registration<br><br>' +
+        '<a href=http://localhost:' +
+        this.configService.appConfig.port +
+        '/api/auth/confirm-email/?token=' +
+        token +
+        '>Click here to activate your account</a>', // html body
+    });
+
+    return Boolean(hasInfo);
   }
 }
