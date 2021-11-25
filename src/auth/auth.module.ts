@@ -2,8 +2,8 @@ import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { MongooseModule } from '@nestjs/mongoose';
 import { PassportModule } from '@nestjs/passport';
-import { SharedModule } from '../shared/shared.module';
 
+import { SharedModule } from '../shared/shared.module';
 import { UserSchema } from '../users/schemas/user.schema';
 import { AuthController } from './auth.controller';
 import authConfig from './auth-config.development';
@@ -33,7 +33,7 @@ import { WindowsliveStrategy } from './strategies/windowslive.strategy';
       signOptions: { expiresIn: '7d' },
     }),
     MongooseModule.forFeature([{ name: 'User', schema: UserSchema }]),
-    SharedModule
+    SharedModule,
   ],
   controllers: [AuthController],
   providers: [
@@ -51,6 +51,7 @@ import { WindowsliveStrategy } from './strategies/windowslive.strategy';
     WindowsliveStrategy,
     WindowsliveService,
   ],
+  exports: [AuthService, UserService, WindowsliveService],
   exports: [AuthService, UserService, WindowsliveService],
 })
 export class AuthModule {}

@@ -1,9 +1,9 @@
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import type { TestingModule } from '@nestjs/testing';
 import { Test } from '@nestjs/testing';
-import authConfig from '../auth-config.development';
 
 import { EmailService } from '../../shared/services/email.service';
+import authConfig from '../auth-config.development';
 import { AuthService } from './auth.service';
 import { UserService } from './user.service';
 
@@ -29,19 +29,22 @@ describe('AuthService', () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [
         JwtModule.register({
-        secret: authConfig.jwtSecretKey,
-        signOptions: { expiresIn: '7d' },
-      }),],
-      providers: [AuthService, 
-      {
-        provide: EmailService,
-        useValue: mockEmailService,
-      },
-      {
-        provide: UserService,
-        useValue: mockUserService,
-      },],
-      exports: [JwtModule]
+          secret: authConfig.jwtSecretKey,
+          signOptions: { expiresIn: '7d' },
+        }),
+      ],
+      providers: [
+        AuthService,
+        {
+          provide: EmailService,
+          useValue: mockEmailService,
+        },
+        {
+          provide: UserService,
+          useValue: mockUserService,
+        },
+      ],
+      exports: [JwtModule],
     }).compile();
     service = module.get<AuthService>(AuthService);
   });

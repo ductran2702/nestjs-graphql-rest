@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { APP_GUARD } from '@nestjs/core';
 import { MongooseModule } from '@nestjs/mongoose';
 
 import { GraphqlPassportAuthGuard } from '../shared/guards/graphql-passport-auth.guard';

@@ -18,13 +18,7 @@ export class LinkedInStrategy extends PassportStrategy(Strategy, 'linkedin') {
     });
   }
 
-  async validate(
-    req: any,
-    accessToken: string,
-    refreshToken: string,
-    profile: any,
-    done: VerifiedCallback,
-  ) {
+  async validate(req: any, accessToken: string, refreshToken: string, profile: any, done: VerifiedCallback) {
     try {
       Logger.log('LinkedIn UserProfile', 'Auth');
       const jsonProfile = (profile && profile._json) || {};
@@ -38,10 +32,7 @@ export class LinkedInStrategy extends PassportStrategy(Strategy, 'linkedin') {
       };
 
       // console.log('userProfile::', profile)
-      const oauthResponse = await this.authService.validateOAuthLogin(
-        userProfile,
-        Provider.LINKEDIN,
-      );
+      const oauthResponse = await this.authService.validateOAuthLogin(userProfile, Provider.LINKEDIN);
       done(null, {
         ...JSON.parse(JSON.stringify(oauthResponse.user)),
         jwt: oauthResponse.jwt,

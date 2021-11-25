@@ -1,7 +1,7 @@
 import { ArgsType, Field } from '@nestjs/graphql';
 
-import { FilterByString } from '../types/filterByString.type';
-import { OrderByString } from '../types/orderByString.type';
+import { FilterByString } from '../types/filter-by-string.type';
+import { OrderByString } from '../types/order-by-string.type';
 
 @ArgsType()
 export class StringQueryArgs {

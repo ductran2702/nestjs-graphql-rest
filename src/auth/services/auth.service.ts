@@ -1,22 +1,19 @@
-import {
-  BadRequestException,
-  HttpException,
-  Injectable,
-  InternalServerErrorException,
-} from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as crypto from 'crypto';
 import { sign } from 'jsonwebtoken';
+
 import { UserNotFoundException } from '../../shared/exceptions/user-not-found.exception';
 import { EmailService } from '../../shared/services/email.service';
-
+import { SmsService } from '../../shared/services/sms.service';
 import authConfig from '../auth-config.development';
 import type { UserSignupDto } from '../dto';
-import type { ConfirmEmailDto } from '../dto/confirmEmail.dto';
-import type { ForgotPasswordDto } from '../dto/forgotPassword.dto';
-import type { ResendConfirmEmailDto } from '../dto/resendConfirmEmail.dto';
-import type { ResetPasswordDto } from '../dto/resetPassword.dto';
-import type { VerificationTokenPayloadDto } from '../dto/verificationTokenPayload.dto';
+import type { ConfirmEmailDto } from '../dto/ConfirmEmail.dto';
+import type { ForgotPasswordDto } from '../dto/ForgotPassword.dto';
+import type { ResendConfirmEmailDto } from '../dto/ResendConfirmEmail.dto';
+import type { ResetPasswordDto } from '../dto/ResetPassword.dto';
+import type { VerificationTokenPayloadDto } from '../dto/VerificationTokenPayload.dto';
+import type { VerifyOtpDto } from '../dto/VerifyOtp.dto';
 import type { User } from '../models';
 import { UserService } from './user.service';
 
@@ -37,13 +34,11 @@ export class AuthService {
   constructor(
     private jwtService: JwtService,
     private userService: UserService,
-    private emailService: EmailService
+    private emailService: EmailService,
+    private smsService: SmsService,
   ) {}
 
-  async validateOAuthLogin(
-    userProfile: any,
-    provider: Provider,
-  ): Promise<{ jwt: string; user: User }> {
+  async validateOAuthLogin(userProfile: any, provider: Provider): Promise<{ jwt: string; user: User }> {
     try {
       // find user in MongoDB and if not found then create it in the DB
       let existingUser = await this.userService.findOne({
@@ -58,8 +53,7 @@ export class AuthService {
         });
       }
 
-      const { userId, email, displayName, picture, providers, roles } =
-        existingUser;
+      const { userId, email, displayName, picture, providers, roles } = existingUser;
       const signingPayload = {
         userId,
         email,
@@ -74,10 +68,7 @@ export class AuthService {
 
       return { jwt, user: existingUser };
     } catch (error) {
-      throw new InternalServerErrorException(
-        'validateOAuthLogin',
-        error.message,
-      );
+      throw new InternalServerErrorException('validateOAuthLogin', error.message);
     }
   }
 
@@ -91,10 +82,11 @@ export class AuthService {
     return null;
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   async login(user: User): Promise<{ token: string }> {
-    const { email, displayName, userId, roles } = user;
+    const { email, displayName, userId, roles, isEmailConfirmed } = user;
 
-    if (user.isEmailConfirmed === undefined || !user.isEmailConfirmed) {
+    if (isEmailConfirmed === undefined || !isEmailConfirmed) {
       throw new BadRequestException('Email not confirmed yet');
     }
 
@@ -103,22 +95,54 @@ export class AuthService {
     };
   }
 
-  async forgotPassword(forgotPasswordDto: ForgotPasswordDto): Promise<boolean> {
-    const { email } = forgotPasswordDto;
+  async verifyOtp(verifyOtp: VerifyOtpDto): Promise<{ token: string }> {
+    const { phone, otpCode } = verifyOtp;
 
-    const user = await this.userService.findOne(email);
+    const user = await this.userService.findOne({ phone, otpCodeExpires: { $gte: new Date() } });
+
+    if (!user) {
+      throw new HttpException('OTP code is invalid or has expired', 401);
+    }
+
+    const token = this.randomString(20);
+    await this.userService.saveResetToken(user, token, new Date(Date.now() + 3_600_000));
+
+    return { token };
+  }
+
+  async forgotPassword(forgotPasswordDto: ForgotPasswordDto): Promise<boolean> {
+    const { email, phone } = forgotPasswordDto;
+    const filter = {} as any;
+
+    if (email) {
+      filter.email = email;
+    } else if (phone) {
+      filter.phone = phone;
+    } else {
+      throw new HttpException('Not provide email neither phone', 401);
+    }
+
+    const user = await this.userService.findOne(filter);
 
     if (!user) {
       return true;
     }
 
-    const token = this.randomString(20);
-    await this.userService.saveResetToken(
-      user,
-      token,
-      new Date(Date.now() + 3_600_000),
-    );
-    await this.emailService.sendForgotPasswordEmail(email.toString(), token);
+    if (email) {
+      const token = this.randomString(20);
+      await this.userService.saveResetToken(user, token, new Date(Date.now() + 3_600_000));
+      await this.emailService.sendForgotPasswordEmail(email.toString(), token);
+    } else if (phone) {
+      const otpCode = this.randomNumber(6);
+      await this.userService.saveOtpCode(
+        user,
+        otpCode,
+        new Date(Date.now() + 300_000), // 5 minutes
+      );
+      await this.smsService.sendOtpCodeSms(phone, otpCode);
+    } else {
+      throw new HttpException('Not provide email neither phone', 401);
+    }
 
     return true;
   }
@@ -140,10 +164,7 @@ export class AuthService {
     const user = await this.userService.findOne(filter);
 
     if (!user) {
-      throw new HttpException(
-        'Password reset token is invalid or has expired',
-        401,
-      );
+      throw new HttpException('Password reset token is invalid or has expired', 401);
     }
 
     await this.userService.saveNewPassword(user, resetPasswordDto);
@@ -165,7 +186,7 @@ export class AuthService {
       new Date(Date.now() + 3_600_000), // 1 hour
     );
 
-    this.emailService.sendVerificationLinkEmail(email.toString(), token);
+    await this.emailService.sendVerificationLinkEmail(email.toString(), token);
 
     return {
       token: this.jwtService.sign({ email, displayName, userId, roles }),
@@ -173,9 +194,7 @@ export class AuthService {
   }
 
   async confirmEmail(confirmEmailDto: ConfirmEmailDto): Promise<boolean> {
-    const { email, verifyEmailToken } = await this.decodeConfirmationToken(
-      confirmEmailDto.token,
-    );
+    const { email, verifyEmailToken } = await this.decodeConfirmationToken(confirmEmailDto.token);
 
     const user = await this.userService.findOne({
       email,
@@ -183,10 +202,7 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new HttpException(
-        'Verify email token is invalid or has expired',
-        401,
-      );
+      throw new HttpException('Verify email token is invalid or has expired', 401);
     }
 
     if (user.isEmailConfirmed) {
@@ -198,9 +214,7 @@ export class AuthService {
     return true;
   }
 
-  async resendConfirmEmail(
-    resendConfirmEmailDto: ResendConfirmEmailDto,
-  ): Promise<boolean> {
+  async resendConfirmEmail(resendConfirmEmailDto: ResendConfirmEmailDto): Promise<boolean> {
     const user = await this.userService.findOne({
       email: resendConfirmEmailDto.email,
     });
@@ -226,10 +240,7 @@ export class AuthService {
       new Date(Date.now() + 3_600_000), // 1 hour
     );
 
-    await this.emailService.sendVerificationLinkEmail(
-      user.email.toString(),
-      token,
-    );
+    await this.emailService.sendVerificationLinkEmail(user.email.toString(), token);
 
     return true;
   }
@@ -249,10 +260,7 @@ export class AuthService {
       throw new Error('Zero-length randomString is useless.');
     }
 
-    const chars =
-      'ABCDEFGHIJKLMNOPQRSTUVWXYZ' +
-      'abcdefghijklmnopqrstuvwxyz' +
-      '0123456789';
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' + 'abcdefghijklmnopqrstuvwxyz' + '0123456789';
     let objectId = '';
     const bytes = crypto.randomBytes(size);
 
@@ -279,9 +287,7 @@ export class AuthService {
     return objectId;
   }
 
-  async decodeConfirmationToken(
-    token: string,
-  ): Promise<VerificationTokenPayloadDto> {
+  decodeConfirmationToken(token: string): Promise<VerificationTokenPayloadDto> {
     try {
       const payload = this.jwtService.verify(token);
 

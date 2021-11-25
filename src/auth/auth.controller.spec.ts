@@ -5,10 +5,10 @@ import { PassportModule } from '@nestjs/passport';
 import type { TestingModule } from '@nestjs/testing';
 import { Test } from '@nestjs/testing';
 
-import { UserSchema } from '../users/schemas/user.schema';
 import { EmailService } from '../shared/services/email.service';
-import authConfig from './auth-config.development';
+import { UserSchema } from '../users/schemas/user.schema';
 import { AuthController } from './auth.controller';
+import authConfig from './auth-config.development';
 import { AuthService } from './services/auth.service';
 import { UserService } from './services/user.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
@@ -43,7 +43,7 @@ describe('Auth Controller', () => {
         //   //      expiresIn: { expiresIn: '7d' },
         //   //   },
         //   //   secretOrPrivateKey: authConfig.jwtSecretKey,
-        //   // }),        
+        //   // }),
         //   // inject: [ConfigModule]
         //   secret: authConfig.jwtSecretKey,
         //   signOptions: { expiresIn: '7d' },
@@ -69,8 +69,7 @@ describe('Auth Controller', () => {
     }).compile();
   });
   it('should be defined', () => {
-    const controller: AuthController =
-      module.get<AuthController>(AuthController);
+    const controller: AuthController = module.get<AuthController>(AuthController);
     expect(controller).toBeDefined();
   });
 });

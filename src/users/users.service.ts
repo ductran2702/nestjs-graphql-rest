@@ -12,23 +12,22 @@ import type { User } from './models/user.interface';
 export class UsersService {
   constructor(@InjectModel('User') private readonly userModel: Model<User>) {}
 
-  stringToBase64 = (data: any): string => Buffer.from(data).toString('base64');
+  stringToBase64 = (data: string): string => Buffer.from(data).toString('base64');
 
-  base64ToString = (data: any): string =>
-    Buffer.from(data, 'base64').toString('ascii');
+  base64ToString = (data: string): string => Buffer.from(data, 'base64').toString('ascii');
 
   async findAll(): Promise<User[]> {
-    return await this.userModel.find().exec();
+    return this.userModel.find().exec();
   }
 
   async getUsers(userQueryArgs: UserQueryArgs): Promise<{
     totalCount: number;
     nodes: User[];
-    pageInfo?: { hasNextPage: boolean; endCursor: string | null };
+    pageInfo?: { hasNextPage: boolean; endCursor?: string };
   }> {
     const { first, offset, filterBy, orderBy, cursor } = userQueryArgs;
 
-    const findQuery = filterBy ? getFilterByQuery(filterBy) : {} as any;
+    const findQuery = filterBy ? getFilterByQuery(filterBy) : ({} as any);
 
     if (cursor) {
       findQuery._id = {
@@ -37,7 +36,7 @@ export class UsersService {
       };
     }
 
-    let schema = this.userModel.find(findQuery);
+    let schema = this.userModel.find({ ...findQuery });
 
     if (Array.isArray(orderBy)) {
       const sort: string[][] = [];
@@ -67,15 +66,13 @@ export class UsersService {
       nodes,
       pageInfo: {
         hasNextPage,
-        endCursor: hasNextPage
-          ? this.stringToBase64(nodes[nodes.length - 1].id)
-          : null,
+        endCursor: hasNextPage ? this.stringToBase64(nodes[nodes.length - 1].id) : undefined,
       },
     };
   }
 
   async getTotalUserCount(): Promise<number> {
-    return await this.userModel.countDocuments().exec();
+    return this.userModel.countDocuments().exec();
   }
 
   async findById(id: string): Promise<User> {

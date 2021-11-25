@@ -15,11 +15,6 @@ import { OwnersService } from './services/owners.service';
       { name: 'User', schema: UserSchema },
     ]),
   ],
-  providers: [
-    CatsResolver,
-    CatsService,
-    GraphqlPassportAuthGuard,
-    OwnersService,
-  ],
+  providers: [CatsResolver, CatsService, GraphqlPassportAuthGuard, OwnersService],
 })
 export class CatsModule {}

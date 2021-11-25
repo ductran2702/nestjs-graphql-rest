@@ -8,14 +8,8 @@ import { AuthService, Provider } from '../services/auth.service';
 import { WindowsliveService } from '../services/windowslive.service';
 
 @Injectable()
-export class WindowsliveStrategy extends PassportStrategy(
-  Strategy,
-  'windowslive',
-) {
-  constructor(
-    private readonly authService: AuthService,
-    private windowsliveService: WindowsliveService,
-  ) {
+export class WindowsliveStrategy extends PassportStrategy(Strategy, 'windowslive') {
+  constructor(private readonly authService: AuthService, private windowsliveService: WindowsliveService) {
     super({
       clientID: authConfig.providers.windowslive.clientID,
       clientSecret: authConfig.providers.windowslive.clientSecret,
@@ -25,13 +19,7 @@ export class WindowsliveStrategy extends PassportStrategy(
     });
   }
 
-  async validate(
-    req: any,
-    accessToken: string,
-    refreshToken: string,
-    profile: any,
-    done: VerifiedCallback,
-  ) {
+  async validate(req: any, accessToken: string, refreshToken: string, profile: any, done: VerifiedCallback) {
     try {
       Logger.log('WindowsLive UserProfile', 'Auth');
       // get larger image from Microsoft Graph API
@@ -47,10 +35,7 @@ export class WindowsliveStrategy extends PassportStrategy(
         displayName: jsonProfile.name,
         picture: null, // profile.photos[0].value, <-- no longer valid, we now have to use MS Graph API
       };
-      const oauthResponse = await this.authService.validateOAuthLogin(
-        userProfile,
-        Provider.WINDOWS_LIVE,
-      );
+      const oauthResponse = await this.authService.validateOAuthLogin(userProfile, Provider.WINDOWS_LIVE);
       done(null, {
         ...JSON.parse(JSON.stringify(oauthResponse.user)),
         jwt: oauthResponse.jwt,

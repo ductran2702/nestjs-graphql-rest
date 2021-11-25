@@ -11,7 +11,7 @@ export class OwnersService {
   constructor(@InjectModel('User') private readonly userModel: Model<User>) {}
 
   async findAll(): Promise<User[]> {
-    return await this.userModel.find().exec();
+    return this.userModel.find().exec();
   }
 
   async findByUserId(id: string): Promise<User> {

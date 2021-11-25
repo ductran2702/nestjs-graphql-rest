@@ -1,6 +1,7 @@
 import * as bcrypt from 'bcryptjs';
 import * as mongoose from 'mongoose';
 import { Schema } from 'mongoose';
+
 import type { User } from '../../auth/models';
 
 export const ProviderSchema = new Schema({
@@ -41,6 +42,7 @@ export const UserSchema = new Schema(
 );
 
 UserSchema.pre('save', async function (next) {
+  // eslint-disable-next-line no-invalid-this
   const user = this as User;
 
   // only hash the password if it has been modified (or is new)
@@ -50,17 +52,18 @@ UserSchema.pre('save', async function (next) {
   }
 
   if (user.isModified('resetPasswordToken')) {
-    const resetPasswordToken = user.resetPasswordToken
-      ? await bcrypt.hash(user.resetPasswordToken, 10)
-      : null;
+    const resetPasswordToken = user.resetPasswordToken ? await bcrypt.hash(user.resetPasswordToken, 10) : null;
     user.resetPasswordToken = resetPasswordToken;
   }
 
   if (user.isModified('verifyEmailToken')) {
-    const verifyEmailToken = user.verifyEmailToken
-      ? await bcrypt.hash(user.verifyEmailToken, 10)
-      : null;
+    const verifyEmailToken = user.verifyEmailToken ? await bcrypt.hash(user.verifyEmailToken, 10) : null;
     user.verifyEmailToken = verifyEmailToken;
+  }
+
+  if (user.isModified('otpCode')) {
+    const otpCode = user.otpCode ? await bcrypt.hash(user.otpCode, 10) : null;
+    user.otpCode = otpCode;
   }
 
   next();

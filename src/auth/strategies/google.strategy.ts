@@ -18,13 +18,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     });
   }
 
-  async validate(
-    req: any,
-    accessToken: string,
-    refreshToken: string,
-    profile: any,
-    done: VerifiedCallback,
-  ) {
+  async validate(req: any, accessToken: string, refreshToken: string, profile: any, done: VerifiedCallback) {
     try {
       Logger.log('Google UserProfile', 'Auth');
       const jsonProfile = (profile && profile._json) || {};
@@ -38,10 +32,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
         picture: jsonProfile.picture.replace('sz=50', 'sz=200'),
       };
 
-      const oauthResponse = await this.authService.validateOAuthLogin(
-        userProfile,
-        Provider.GOOGLE,
-      );
+      const oauthResponse = await this.authService.validateOAuthLogin(userProfile, Provider.GOOGLE);
       done(null, {
         ...JSON.parse(JSON.stringify(oauthResponse.user)),
         jwt: oauthResponse.jwt,

@@ -16,12 +16,10 @@ export class CatsService {
     const newCat = { ...createCat, ownerId: currentUser.userId };
     const createdCat = new this.catModel(newCat);
 
-    return await createdCat.save();
+    return createdCat.save();
   }
 
-  async query(queryArgs: {
-    orderBy?: Array<{ field: string; direction: Direction }>;
-  }): Promise<Cat[]> {
+  async query(queryArgs: { orderBy?: Array<{ field: string; direction: Direction }> }): Promise<Cat[]> {
     let modelFind = this.catModel.find();
 
     // [['name', 'asc']]

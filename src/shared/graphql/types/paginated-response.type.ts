@@ -1,6 +1,6 @@
 import { Field, Int, ObjectType } from '@nestjs/graphql';
 
-import { PageInfo } from './pageInfo.type';
+import { PageInfo } from './page-info.type';
 
 // export function PaginatedResponse<TItem>(TItemClass: ClassType<TItem>): any {
 export function PaginatedResponse<TItem>(TItemClass: any): any {

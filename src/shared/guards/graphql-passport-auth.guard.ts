@@ -40,14 +40,13 @@ export class GraphqlPassportAuthGuard extends AuthGuard('jwt') {
 
   private hasAccess(roles, requiredRole): boolean {
     if (Array.isArray(roles)) {
-      const adminFoundIndex = roles.findIndex(
-        (role: string) => role.toUpperCase() === requiredRole,
-      );
+      const adminFoundIndex = roles.findIndex((role: string) => role.toUpperCase() === requiredRole);
 
       if (adminFoundIndex >= 0) {
         return true;
       }
     }
+
     return false;
   }
 }
