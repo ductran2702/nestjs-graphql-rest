@@ -1,16 +1,22 @@
-import { IsString, IsEmail, MinLength } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { IsString, IsEmail, MinLength, isPhoneNumber, IsPhoneNumber, IsOptional } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class ResetPasswordDto {
   
   @IsEmail()
-  @ApiProperty({ example: 'someone@yopmail.com', description: 'User\'s Email', type: () => 'string' })
-  readonly email: { type: string, lowercase: true };
+  @IsOptional()
+  @ApiPropertyOptional({ example: 'golfai@yopmail.com', description: 'User\'s Email', type: () => 'string' })
+  readonly email?: { type: string, lowercase: true };
+
+  @IsPhoneNumber(null)
+  @IsOptional()
+  @ApiPropertyOptional({ example: '+840123456789', description: 'User\'s Phone', type: () => 'string' })
+  readonly phone?: string;
 
   @IsString()
   @MinLength(5)
   @ApiProperty({ description: 'User\'s Password (only applies when using username/password)', type: () => 'string' })
-  readonly password: string;
+  readonly newPassword: string;
 
   @IsString()
   @ApiProperty({ description: 'Reset password token', type: () => 'string' })

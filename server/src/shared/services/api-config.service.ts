@@ -145,6 +145,14 @@ export class ApiConfigService {
     };
   }
 
+  get smsConfig() {
+    return {
+      accountSid: this.getString('TWILIO_ACCOUNT_SID'),
+      authToken: this.getString('TWILIO_AUTH_TOKEN'),
+      phoneFrom: this.getString('TWILIO_PHONE'),
+    };
+  }
+
   get appConfig() {
     return {
       port: this.getString('PORT'),

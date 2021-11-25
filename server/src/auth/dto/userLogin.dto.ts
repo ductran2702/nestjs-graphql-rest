@@ -3,7 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class UserLoginDto {
   @IsEmail()
-  @ApiProperty({ example: 'someone@yopmail.com', description: 'User\'s Email', type: () => 'string' })
+  @ApiProperty({ example: 'golfai@yopmail.com', description: 'User\'s Email', type: () => 'string' })
   readonly username: { type: string, lowercase: true };
 
   @IsString()

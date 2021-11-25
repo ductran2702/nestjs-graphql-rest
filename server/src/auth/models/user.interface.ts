@@ -25,4 +25,7 @@ export interface User extends Document {
   verifyEmailToken?: string;
   verifyEmailExpires?: Date;
   isEmailConfirmed?: boolean;
+  otpCode?: string;
+  otpCodeExpires?: Date;
+  phone?: string;
 }

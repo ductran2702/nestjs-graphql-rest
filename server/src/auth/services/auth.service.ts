@@ -6,16 +6,16 @@ import * as crypto from 'crypto';
 import authConfig from '../auth-config.development';
 import { UserService } from './user.service';
 import { User } from '../models';
-import { UserDto, UserSignupDto } from '../dto';
-import e = require('express');
+import { UserSignupDto } from '../dto';
 import { ForgotPasswordDto } from '../dto/forgotPassword.dto';
 import { EmailService } from 'src/shared/services/email.service';
-import { ApiConfigService } from 'src/shared/services/api-config.service';
 import { ResetPasswordDto } from '../dto/resetPassword.dto';
 import { VerificationTokenPayloadDto } from '../dto/verificationTokenPayload.dto';
 import { UserNotFoundException } from 'src/shared/exceptions/user-not-found.exception';
 import { ConfirmEmailDto } from '../dto/confirmEmail.dto';
 import { ResendConfirmEmailDto } from '../dto/resendConfirmEmail.dto';
+import { SmsService } from 'src/shared/services/sms.service';
+import { VerifyOtpDto } from '../dto/verifyOtp.dto';
 
 export enum Provider {
   FACEBOOK = 'facebook',
@@ -36,7 +36,7 @@ export class AuthService {
     private jwtService: JwtService, 
     private userService: UserService, 
     private emailService: EmailService,
-    private configService: ApiConfigService,
+    private smsService: SmsService,
   ) { }
 
   async validateOAuthLogin(userProfile: any, provider: Provider): Promise<{ jwt: string; user: User }> {
@@ -74,11 +74,16 @@ export class AuthService {
     return { token: this.jwtService.sign({ email, displayName, userId, roles }) };
   }
 
-  async forgotPassword(forgotPasswordDto: ForgotPasswordDto): Promise<boolean> {
-    const { email } = forgotPasswordDto;
-    const user = await this.userService.findOne({ email });
+  async verifyOtp(verifyOtp: VerifyOtpDto): Promise<{ token: string }> {
+    const { phone, otpCode } = verifyOtp;
+
+    const user = await this.userService.findOne({ phone, otpCodeExpires: { $gte: new Date() } });
+
     if (!user) {
-      return true;
+      throw new HttpException(
+        'OTP code is invalid or has expired',
+        401,
+      );
     }
     const token = this.randomString(20);
     await this.userService.saveResetToken(
@@ -87,16 +92,71 @@ export class AuthService {
       new Date(Date.now() + 3_600_000),
     );
 
-    this.emailService.sendForgotPasswordEmail(email.toString(), token);
+    return { token };
+  }
+
+  async forgotPassword(forgotPasswordDto: ForgotPasswordDto): Promise<boolean> {
+    const { email, phone } = forgotPasswordDto;
+    const filter = {} as any;
+
+    if (email) {
+      filter.email = email;
+    } else if (phone) {
+      filter.phone = phone;
+    } else {
+      throw new HttpException(
+        'Not provide email neither phone',
+        401,
+      );
+    }
+
+    const user = await this.userService.findOne(filter);
+    if (!user) {
+      return true;
+    }
+
+    if (email) {
+      const token = this.randomString(20);
+      await this.userService.saveResetToken(
+        user,
+        token,
+        new Date(Date.now() + 3_600_000),
+      );
+      await this.emailService.sendForgotPasswordEmail(email.toString(), token);
+    } else if (phone) {
+      const otpCode = this.randomNumber(6);
+      await this.userService.saveOtpCode(
+        user,
+        otpCode,
+        new Date(Date.now() + 300_000), // 5 minutes
+      );
+      await this.smsService.sendOtpCodeSms(phone, otpCode);
+    } else {
+      throw new HttpException('Not provide email neither phone', 401);
+    }
+
     return true;
   }
 
   async resetPassword(resetPasswordDto: ResetPasswordDto): Promise<boolean> {
-    const { email } = resetPasswordDto;
-    const user = await this.userService.findOne({
-      email,
+    const { email, phone } = resetPasswordDto;
+    const filter = {
       resetPasswordExpires: { $gte: new Date() } ,
-    });
+    } as any;
+
+    if (email) {
+      filter.email = email;
+    } else if (phone) {
+      filter.phone = phone;
+    } else {
+      throw new HttpException(
+        'Not provide email neither phone',
+        401,
+      );
+    }
+
+    const user = await this.userService.findOne(filter);
+
     if (!user) {
       throw new HttpException(
         'Password reset token is invalid or has expired',
@@ -188,6 +248,19 @@ export class AuthService {
       throw new Error('Zero-length randomString is useless.');
     }
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' + 'abcdefghijklmnopqrstuvwxyz' + '0123456789';
+    let objectId = '';
+    const bytes = crypto.randomBytes(size);
+    for (let i = 0; i < bytes.length; ++i) {
+      objectId += chars[bytes.readUInt8(i) % chars.length];
+    }
+    return objectId;
+  }
+
+  private randomNumber(size: number): string {
+    if (size === 0) {
+      throw new Error('Zero-length randomNumber is useless.');
+    }
+    const chars = '0123456789';
     let objectId = '';
     const bytes = crypto.randomBytes(size);
     for (let i = 0; i < bytes.length; ++i) {

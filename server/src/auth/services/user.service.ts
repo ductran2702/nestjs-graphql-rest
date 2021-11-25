@@ -83,6 +83,16 @@ export class UserService {
     return user.save();
   }
 
+  saveOtpCode(
+    user: User,
+    otpCode: string,
+    otpCodeExpires: Date,
+  ): Promise<User> {
+    user.otpCode = otpCode;
+    user.otpCodeExpires = otpCodeExpires;
+
+    return user.save();
+  }
 
   async saveNewPassword(
     user: User,
@@ -100,7 +110,7 @@ export class UserService {
       );
     }
 
-    user.password = resetPasswordDto.password;
+    user.password = resetPasswordDto.newPassword;
     user.resetPasswordToken = null;
     user.resetPasswordExpires = null;
 

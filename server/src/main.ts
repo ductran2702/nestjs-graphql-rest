@@ -5,6 +5,7 @@ import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './shared/filters/http-exception.filter';
 import { LoggingInterceptor } from './shared/interceptors/logging.interceptor';
 import { TimeoutInterceptor } from './shared/interceptors/timeout.interceptor';
+import { TransformInterceptor } from './shared/interceptors/transform.interceptor';
 import { setupSwagger } from './swagger';
 
 const port = process.env.PORT;
@@ -17,7 +18,8 @@ async function bootstrap() {
   app.useGlobalFilters(new HttpExceptionFilter());
   app.useGlobalInterceptors(
     new TimeoutInterceptor(),
-    new LoggingInterceptor()
+    new LoggingInterceptor(),
+    new TransformInterceptor()
   );
   app.useGlobalPipes(new ValidationPipe({
     whitelist: true,

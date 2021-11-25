@@ -12,7 +12,6 @@ export class EmailService {
 
   constructor(
     private readonly configService: ApiConfigService,
-    private readonly jwtService: JwtService,
   ) {
     this.nodemailerTransport = nodemailer.createTransport({
       host: this.configService.emailConfig.host,

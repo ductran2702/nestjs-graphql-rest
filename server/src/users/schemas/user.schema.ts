@@ -32,10 +32,13 @@ export const UserSchema = new Schema({
   verifyEmailToken: String,
   verifyEmailExpires: Date,
   isEmailConfirmed: Boolean,
+  otpCode: String,
+  otpCodeExpires: Date,
+  phone: String,
 }, { timestamps: true });
 
 UserSchema.pre('save', async function(next) {
-  var user = this as User;
+  const user = this as User;
 
   // only hash the password if it has been modified (or is new)
   if (user.isModified('password')) {
@@ -49,6 +52,10 @@ UserSchema.pre('save', async function(next) {
   if (user.isModified('verifyEmailToken')) {
     const verifyEmailToken = user.verifyEmailToken ? await bcrypt.hash(user.verifyEmailToken, 10) : null;
     user.verifyEmailToken = verifyEmailToken;
+  }
+  if (user.isModified('otpCode')) {
+    const otpCode = user.otpCode ? await bcrypt.hash(user.otpCode, 10) : null;
+    user.otpCode = otpCode;
   }
   next();
 });
