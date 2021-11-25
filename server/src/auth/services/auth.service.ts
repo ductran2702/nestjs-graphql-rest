@@ -80,7 +80,7 @@ export class AuthService {
     if (!user) {
       return true;
     }
-    const token = this.generateRandomToken();
+    const token = this.randomString(20);
     await this.userService.saveResetToken(
       user,
       token,
@@ -113,7 +113,7 @@ export class AuthService {
     const createdUser = await this.userService.create(signupUser);
     const { email, displayName, userId, roles } = createdUser;
 
-    const verifyEmailToken = this.generateRandomToken();
+    const verifyEmailToken = this.randomString(20);
     const payload: VerificationTokenPayloadDto = { email, verifyEmailToken };
     const token = this.jwtService.sign(payload);
 
@@ -160,7 +160,7 @@ export class AuthService {
       throw new BadRequestException('Email already confirmed');
     }
 
-    const verifyEmailToken = this.generateRandomToken();
+    const verifyEmailToken = this.randomString(20);
     const payload: VerificationTokenPayloadDto = { email: user.email, verifyEmailToken };
     const token = this.jwtService.sign(payload);
 
@@ -181,10 +181,6 @@ export class AuthService {
     }
     const userFound = await this.userService.findOne({ email: user.email });
     return !userFound;
-  }
-
-  private generateRandomToken(): string {
-    return crypto.randomBytes(20).toString('hex');
   }
 
   private randomString(size: number): string {
