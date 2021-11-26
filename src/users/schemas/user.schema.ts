@@ -36,7 +36,7 @@ export const UserSchema = new Schema(
     isEmailConfirmed: Boolean,
     otpCode: String,
     otpCodeExpires: Date,
-    phone: String,
+    phone: { type: String, unique: true },
   },
   { timestamps: true },
 );

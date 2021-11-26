@@ -19,6 +19,6 @@ export class SmsService {
     });
     console.log('Sent Otp code result:', info);
 
-    return Boolean(info);
+    return info && info.errorCode === null;
   }
 }
