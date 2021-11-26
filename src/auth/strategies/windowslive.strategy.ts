@@ -3,7 +3,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import type { VerifiedCallback } from 'passport-jwt';
 import { Strategy } from 'passport-windowslive';
 
-import authConfig from '../auth-config.development';
+import { authConfig } from '../auth-config.development';
 import { AuthService, Provider } from '../services/auth.service';
 import { WindowsliveService } from '../services/windowslive.service';
 

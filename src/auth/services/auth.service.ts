@@ -6,7 +6,7 @@ import { sign } from 'jsonwebtoken';
 import { UserNotFoundException } from '../../shared/exceptions/user-not-found.exception';
 import { EmailService } from '../../shared/services/email.service';
 import { SmsService } from '../../shared/services/sms.service';
-import authConfig from '../auth-config.development';
+import { authConfig } from '../auth-config.development';
 import type { UserSignupDto } from '../dto';
 import type { ConfirmEmailDto } from '../dto/ConfirmEmail.dto';
 import type { ForgotPasswordDto } from '../dto/ForgotPassword.dto';

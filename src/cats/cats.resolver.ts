@@ -1,5 +1,5 @@
 import { UseGuards } from '@nestjs/common';
-import { Args, Int, Mutation, Parent, Query, ResolveProperty, Resolver } from '@nestjs/graphql';
+import { Args, Int, Mutation, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 
 import { CurrentUser } from '../shared/decorators';
 import { Roles } from '../shared/decorators/roles.decorator';
@@ -32,7 +32,7 @@ export class CatsResolver {
     return this.catsService.query(queryArgs);
   }
 
-  @ResolveProperty('owner')
+  @ResolveField('owner')
   async owner(@Parent() cat): Promise<any> {
     const { ownerId } = cat;
 

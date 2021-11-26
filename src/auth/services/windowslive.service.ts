@@ -1,6 +1,6 @@
 import { OAuth2 } from 'oauth';
 
-import authConfig from '../auth-config.development';
+import { authConfig } from '../auth-config.development';
 
 export class WindowsliveService {
   oauth;

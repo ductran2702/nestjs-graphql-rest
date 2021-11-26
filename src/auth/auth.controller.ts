@@ -3,7 +3,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import { UserNotFoundException } from '../shared/exceptions/user-not-found.exception';
-import authConfig from './auth-config.development';
+import { authConfig } from './auth-config.development';
 import { TokenDto, UserDto, UsernameDto, UserSignupDto } from './dto';
 import { ConfirmEmailDto } from './dto/ConfirmEmail.dto';
 import { ForgotPasswordDto } from './dto/ForgotPassword.dto';

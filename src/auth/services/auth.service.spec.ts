@@ -2,8 +2,9 @@ import { JwtModule, JwtService } from '@nestjs/jwt';
 import type { TestingModule } from '@nestjs/testing';
 import { Test } from '@nestjs/testing';
 
+import { SmsService } from '../../shared/services/sms.service';
 import { EmailService } from '../../shared/services/email.service';
-import authConfig from '../auth-config.development';
+import { authConfig } from '../auth-config.development';
 import { AuthService } from './auth.service';
 import { UserService } from './user.service';
 
@@ -19,6 +20,14 @@ describe('AuthService', () => {
       resendConfirmationLinkEmail: jest.fn(),
     };
     const mockUserService = {
+      login: jest.fn(),
+      forgotPassword: jest.fn(),
+      register: jest.fn(),
+      resetPassword: jest.fn(),
+      confirmEmail: jest.fn(),
+      resendConfirmationLinkEmail: jest.fn(),
+    };
+    const mockSmsService = {
       login: jest.fn(),
       forgotPassword: jest.fn(),
       register: jest.fn(),
@@ -42,6 +51,10 @@ describe('AuthService', () => {
         {
           provide: UserService,
           useValue: mockUserService,
+        },
+        {
+          provide: SmsService,
+          useValue: mockSmsService,
         },
       ],
       exports: [JwtModule],

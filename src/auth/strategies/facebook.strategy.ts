@@ -3,7 +3,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-facebook';
 import type { VerifiedCallback } from 'passport-jwt';
 
-import authConfig from '../auth-config.development';
+import { authConfig } from '../auth-config.development';
 import { AuthService, Provider } from '../services/auth.service';
 import { FacebookService } from '../services/facebook.service';
 

@@ -6,7 +6,7 @@ import { PassportModule } from '@nestjs/passport';
 import { SharedModule } from '../shared/shared.module';
 import { UserSchema } from '../users/schemas/user.schema';
 import { AuthController } from './auth.controller';
-import authConfig from './auth-config.development';
+import { authConfig } from './auth-config.development';
 import { AuthService } from './services/auth.service';
 import { FacebookService } from './services/facebook.service';
 import { UserService } from './services/user.service';
@@ -51,7 +51,6 @@ import { WindowsliveStrategy } from './strategies/windowslive.strategy';
     WindowsliveStrategy,
     WindowsliveService,
   ],
-  exports: [AuthService, UserService, WindowsliveService],
   exports: [AuthService, UserService, WindowsliveService],
 })
 export class AuthModule {}

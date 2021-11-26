@@ -3,7 +3,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-google-oauth20';
 import type { VerifiedCallback } from 'passport-jwt';
 
-import authConfig from '../auth-config.development';
+import { authConfig } from '../auth-config.development';
 import { AuthService, Provider } from '../services/auth.service';
 
 @Injectable()

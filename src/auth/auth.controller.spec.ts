@@ -8,7 +8,7 @@ import { Test } from '@nestjs/testing';
 import { EmailService } from '../shared/services/email.service';
 import { UserSchema } from '../users/schemas/user.schema';
 import { AuthController } from './auth.controller';
-import authConfig from './auth-config.development';
+import { authConfig } from './auth-config.development';
 import { AuthService } from './services/auth.service';
 import { UserService } from './services/user.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
