@@ -43,7 +43,7 @@ module.exports = {
     '@typescript-eslint/camelcase': 'off',
     '@typescript-eslint/no-unused-vars': 'off',
     '@typescript-eslint/no-unused-vars-experimental': [
-      'error',
+      'warn',
       { ignoredNamesRegex: '^_' },
     ],
     '@typescript-eslint/adjacent-overload-signatures': 'error',
@@ -122,7 +122,7 @@ module.exports = {
     '@typescript-eslint/no-angle-bracket-type-assertion': 'off',
     '@typescript-eslint/no-empty-function': 'error',
     '@typescript-eslint/no-empty-interface': 'error',
-    '@typescript-eslint/no-explicit-any': 'error',
+    '@typescript-eslint/no-explicit-any': 'warn',
     '@typescript-eslint/no-inferrable-types': 'error',
     '@typescript-eslint/await-thenable': 'error',
     '@typescript-eslint/ban-ts-comment': 'error',
@@ -159,7 +159,7 @@ module.exports = {
     ],
     '@typescript-eslint/semi': ['error', 'always'],
     '@typescript-eslint/naming-convention': [
-      'error',
+      'warn',
       {
         selector: 'default',
         format: ['camelCase', 'PascalCase', 'snake_case', 'UPPER_CASE'],
@@ -246,7 +246,7 @@ module.exports = {
     'no-dupe-else-if': 'error',
     'lines-between-class-members': ['error', 'always'],
     'no-console': [
-      'error',
+      'warn',
       {
         allow: [
           'info',
@@ -352,7 +352,7 @@ module.exports = {
     'unicorn/no-nested-ternary': 'error',
     'unicorn/no-new-array': 'error',
     'unicorn/no-new-buffer': 'error',
-    'unicorn/no-null': 'error',
+    'unicorn/no-null': 'warn',
     'unicorn/no-object-as-default-parameter': 'error',
     'unicorn/no-process-exit': 'error',
     'unicorn/no-static-only-class': 'off',

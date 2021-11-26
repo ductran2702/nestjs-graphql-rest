@@ -4,10 +4,10 @@ import { StringQueryArgs } from '../../../shared/graphql/inputs';
 
 @ArgsType()
 export class UserQueryArgs extends StringQueryArgs {
-  @Field((type) => Int)
+  @Field(() => Int)
   first: number;
 
-  @Field((type) => Int)
+  @Field(() => Int)
   offset: number;
 
   @Field({ nullable: true })

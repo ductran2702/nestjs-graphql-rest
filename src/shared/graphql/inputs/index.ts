@@ -1,1 +1,1 @@
-export * from './stringQueryArgs.input';
+export * from './string-query-args.input';

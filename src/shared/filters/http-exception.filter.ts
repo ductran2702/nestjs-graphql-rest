@@ -3,9 +3,7 @@ import { Catch, HttpException } from '@nestjs/common';
 import type { Response } from 'express';
 
 @Catch(HttpException)
-export class HttpExceptionFilter<T extends HttpException>
-  implements ExceptionFilter
-{
+export class HttpExceptionFilter<T extends HttpException> implements ExceptionFilter {
   catch(exception: HttpException, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
@@ -13,9 +11,7 @@ export class HttpExceptionFilter<T extends HttpException>
     const statusCode = exception.getStatus();
     const exceptionResponse = exception.getResponse();
     const error =
-      typeof response === 'string'
-        ? { message: exceptionResponse }
-        : (exceptionResponse as Record<string, unknown>);
+      typeof response === 'string' ? { message: exceptionResponse } : (exceptionResponse as Record<string, unknown>);
 
     // DUC edited: if (response && response.hasOwnProperty('status')) {
     if (response && typeof response.status === 'function') {

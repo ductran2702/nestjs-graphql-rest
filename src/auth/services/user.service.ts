@@ -5,8 +5,8 @@ import { decode } from 'jsonwebtoken';
 import { Model, Types } from 'mongoose';
 
 import { UserDto } from '../dto';
-import type { ResetPasswordDto } from '../dto/resetPassword.dto';
-import type { UserSignupDto } from '../dto/userSignup.dto';
+import type { ResetPasswordDto } from '../dto/ResetPassword.dto';
+import type { UserSignupDto } from '../dto/UserSignup.dto';
 import type { User } from '../models/user.interface';
 
 @Injectable()
@@ -33,15 +33,15 @@ export class UserService {
       userId,
     });
 
-    return await createdUser.save();
+    return createdUser.save();
   }
 
   async count(): Promise<number> {
-    return await this.userModel.countDocuments().exec();
+    return this.userModel.countDocuments().exec();
   }
 
   async findAll(): Promise<User[]> {
-    return await this.userModel.find().exec();
+    return this.userModel.find().exec();
   }
 
   async findById(id: string): Promise<User> {
@@ -79,7 +79,7 @@ export class UserService {
   async unlink(userId: string, providerName: string) {
     console.log('unlink userId', userId);
 
-    return await this.userModel.findOneAndUpdate(
+    return this.userModel.findOneAndUpdate(
       { userId },
       {
         $unset: { [providerName]: true },
@@ -95,32 +95,25 @@ export class UserService {
   //   user.email = updatedUser.email;
   // }
 
-  saveResetToken(
-    user: User,
-    token: string,
-    resetPasswordExpires: Date,
-  ): Promise<User> {
+  saveResetToken(user: User, token: string, resetPasswordExpires: Date): Promise<User> {
     user.resetPasswordToken = token;
     user.resetPasswordExpires = resetPasswordExpires; // 1 hour
 
     return user.save();
   }
 
+  saveOtpCode(user: User, otpCode: string, otpCodeExpires: Date): Promise<User> {
+    user.otpCode = otpCode;
+    user.otpCodeExpires = otpCodeExpires;
 
-  async saveNewPassword(
-    user: User,
-    resetPasswordDto: ResetPasswordDto,
-  ): Promise<User> {
-    const isTokenValid = await this.validateHash(
-      resetPasswordDto.resetPasswordToken,
-      user.resetPasswordToken,
-    );
+    return user.save();
+  }
+
+  async saveNewPassword(user: User, resetPasswordDto: ResetPasswordDto): Promise<User> {
+    const isTokenValid = await this.validateHash(resetPasswordDto.resetPasswordToken, user.resetPasswordToken);
 
     if (!isTokenValid) {
-      throw new HttpException(
-        'Password reset token is invalid or has expired',
-        401,
-      );
+      throw new HttpException('Password reset token is invalid or has expired', 401);
     }
 
     user.password = resetPasswordDto.newPassword;
@@ -130,39 +123,26 @@ export class UserService {
     return user.save();
   }
 
-  saveVerifyToken(
-    user: User,
-    token: string,
-    verifyEmailExpires: Date,
-  ): Promise<User> {
+  saveVerifyToken(user: User, token: string, verifyEmailExpires: Date): Promise<User> {
     user.verifyEmailToken = token;
     user.verifyEmailExpires = verifyEmailExpires;
 
     return user.save();
   }
 
-  async validateHash(
-    plainPassword: string,
-    hashedPassword: string | null | undefined,
-  ): Promise<boolean> {
+  async validateHash(plainPassword: string, hashedPassword: string | null | undefined): Promise<boolean> {
     if (!plainPassword || !hashedPassword) {
       return Promise.resolve(false);
     }
 
-    return await bcrypt.compare(plainPassword, hashedPassword);
+    return bcrypt.compare(plainPassword, hashedPassword);
   }
 
   async markEmailAsConfirmed(user: User, verifyEmailToken: string) {
-    const isTokenValid = await this.validateHash(
-      verifyEmailToken,
-      user.verifyEmailToken,
-    );
+    const isTokenValid = await this.validateHash(verifyEmailToken, user.verifyEmailToken);
 
     if (!isTokenValid) {
-      throw new HttpException(
-        'Verify email token is invalid or has expired',
-        401,
-      );
+      throw new HttpException('Verify email token is invalid or has expired', 401);
     }
 
     user.isEmailConfirmed = true;

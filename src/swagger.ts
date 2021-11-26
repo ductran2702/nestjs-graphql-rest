@@ -22,8 +22,5 @@ export function setupSwagger(app: INestApplication, appPort: number | string) {
 
   const document = SwaggerModule.createDocument(app, options);
   SwaggerModule.setup(uri, app, document);
-  Logger.log(
-    `Load API Documentation at http://localhost:${appPort}/${uri}`,
-    'Swagger',
-  );
+  Logger.log(`Load API Documentation at http://localhost:${appPort}/${uri}`, 'Swagger');
 }

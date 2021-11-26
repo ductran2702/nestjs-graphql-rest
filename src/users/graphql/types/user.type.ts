@@ -22,10 +22,10 @@ export class User {
   @Field({ nullable: true })
   readonly provider: string;
 
-  @Field((type) => [Provider], { nullable: true })
+  @Field(() => [Provider], { nullable: true })
   readonly providers: Provider[];
 
-  @Field((type) => [String])
+  @Field(() => [String])
   readonly roles: string[];
 
   @Field({ nullable: true })

@@ -3,7 +3,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import type { VerifiedCallback } from 'passport-jwt';
 import { Strategy } from 'passport-twitter-oauth2';
 
-import authConfig from '../auth-config.development';
+import { authConfig } from '../auth-config.development';
 import { AuthService, Provider } from '../services/auth.service';
 
 @Injectable()
@@ -18,13 +18,7 @@ export class TwitterStrategy extends PassportStrategy(Strategy, 'twitter') {
     });
   }
 
-  async validate(
-    req: any,
-    accessToken: string,
-    refreshToken: string,
-    profile: any,
-    done: VerifiedCallback,
-  ) {
+  async validate(req: any, accessToken: string, refreshToken: string, profile: any, done: VerifiedCallback) {
     try {
       Logger.log('Twitter UserProfile', 'Auth');
       const jsonProfile = (profile && profile._json) || {};
@@ -38,10 +32,7 @@ export class TwitterStrategy extends PassportStrategy(Strategy, 'twitter') {
         picture: null,
       };
 
-      const oauthResponse = await this.authService.validateOAuthLogin(
-        userProfile,
-        Provider.TWITTER,
-      );
+      const oauthResponse = await this.authService.validateOAuthLogin(userProfile, Provider.TWITTER);
       done(null, {
         ...JSON.parse(JSON.stringify(oauthResponse.user)),
         jwt: oauthResponse.jwt,
