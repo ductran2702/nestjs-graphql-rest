@@ -19,9 +19,7 @@ export class UsersResolver {
   @Query((returns) => PaginatedUserResponse)
   @Roles('admin')
   @UseGuards(new GraphqlPassportAuthGuard('ADMIN'))
-  async users(
-    @Args() queryArgs: UserQueryArgs,
-  ): Promise<PaginatedUserResponse> {
+  async users(@Args() queryArgs: UserQueryArgs): Promise<PaginatedUserResponse> {
     return await this.usersService.getUsers(queryArgs);
   }
 
