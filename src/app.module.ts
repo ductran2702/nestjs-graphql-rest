@@ -3,6 +3,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
 import { MongooseModule } from '@nestjs/mongoose';
+import { MealsModule } from 'meals/meals.module';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -34,6 +35,7 @@ import { UsersModule } from './users/users.module';
       useFindAndModify: false,
     }),
     UsersModule,
+    MealsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
