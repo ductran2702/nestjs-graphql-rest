@@ -1,13 +1,19 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsDate, IsEnum, IsString } from 'class-validator';
+import { IsDate, IsEnum, IsOptional, IsString } from 'class-validator';
 import { MealTime } from 'meals/meal-time.enum';
 
-export class CreateMealDto {
+export class UpdateMealDto {
+  @ApiProperty({ description: 'meal\'s id', type: () => 'string' })
+  @IsString()
+  readonly id: string;
+
   @IsEnum(MealTime)
-  readonly mealTime: MealTime;
+  @IsOptional()
+  readonly mealTime?: MealTime;
 
   @IsString()
+  @IsOptional()
   @ApiProperty({
     description: "Meal's Display image url",
     type: () => 'string',
@@ -16,5 +22,6 @@ export class CreateMealDto {
   
   @Type(() => Date)
   @IsDate()
-  readonly date: Date;
+  @IsOptional()
+  readonly date?: Date;
 }

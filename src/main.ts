@@ -9,6 +9,7 @@ import { LoggingInterceptor } from './shared/interceptors/logging.interceptor';
 import { TimeoutInterceptor } from './shared/interceptors/timeout.interceptor';
 import { TransformInterceptor } from './shared/interceptors/transform.interceptor';
 import { setupSwagger } from './swagger';
+import moment from 'moment-timezone';
 
 const port = process.env.PORT || 3000;
 
@@ -29,6 +30,7 @@ async function bootstrap() {
     }),
   );
   await app.listen(port);
+  moment.tz.setDefault("Asia/Tokyo");
   Logger.log(`Server running on http://localhost:${port}`, 'Bootstrap');
 }
 

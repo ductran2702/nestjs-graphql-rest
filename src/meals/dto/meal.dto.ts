@@ -1,28 +1,34 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString } from 'class-validator';
-import { MealTime } from 'meals/models/meal-time.enum';
-import { Meal } from 'meals/models/meal.interface';
+import { Type } from 'class-transformer';
+import { IsDate, IsEnum, IsString } from 'class-validator';
+import { Meal } from 'meals/meal.schema';
+import { MealTime } from 'meals/meal-time.enum';
 
 export class MealDto {
-  readonly id?: string;
+  @IsString()
+  readonly id: string;
 
   @ApiProperty({ description: 'User Id (when defined)', type: () => 'string' })
-  // readonly userId: string;
+  @IsString()
+  readonly userId: string;
 
+  @IsEnum(MealTime)
   readonly mealTime: MealTime;
+
   @IsString()
   @ApiProperty({
     description: "Meal's Display image url",
     type: () => 'string',
   })
   readonly imageUrl: string;
-  
+
+  @Type(() => Date)
+  @IsDate()
   readonly date: Date;
 
   constructor(meal: Meal) {
-    //super(user);
     this.id = meal.id;
-    // this.userId = meal.userId;
+    this.userId = meal.userId;
     this.mealTime = meal.mealTime;
     this.date = meal.date;
   }
