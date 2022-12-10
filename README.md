@@ -1,10 +1,18 @@
+Version
+    yarn: 1.22.19
+    npm: 6.14.15
+    node: v14.18.1
+
+Run
+    cp .env.example .env.dev
+    yarn
+    yarn start
+
+Swagger: http://localhost:3000/api
+
 # Database diagram:
 
-
-
 ![Database diagram](https://github.com/ductran2702/arent-backend-test/blob/main/Arent.png)
-
-
 
 ## Authentication/Authorization (implemented)
 
