@@ -1,6 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, Query, Request, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { PaginationDto } from 'shared/pagination/pagination.dto';
 
 import { CreateMealDto } from './dto/create-meal.dto';
 import { UpdateMealDto } from './dto/update-meal.dto';
@@ -22,8 +23,9 @@ export class MealsController {
   @ApiOperation({ summary: 'list meal' })
   @UseGuards(AuthGuard('jwt'))
   @Get('')
-  async findAllByUser(@Request() req) {
-    return this.mealsService.findAllByUser(req.user);
+  @ApiQuery({ type: PaginationDto })
+  async findAllByUser(@Request() req, @Query() paginationDto: PaginationDto) {
+    return this.mealsService.findAllByUser(req.user, paginationDto);
   }
 
   @ApiOperation({ summary: 'update meal' })

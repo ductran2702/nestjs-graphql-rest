@@ -5,8 +5,15 @@ import moment from 'moment';
 import { Model, Types } from 'mongoose';
 import { CreateMealDto } from './dto/create-meal.dto';
 import { UpdateMealDto } from './dto/update-meal.dto';
-import { Meal } from './meal.schema';
-import { MealTime } from './meal-time.enum';
+import { Meal } from './dto/meal.interface';
+import { MealTime } from './dto/meal-time.enum';
+import { Order, PaginationDto } from 'shared/pagination/pagination.dto';
+import { PaginatedResponse } from 'shared/pagination/paginated-response.type';
+import { MealDto } from './dto/meal.dto';
+
+const PaginatedMealResponse = PaginatedResponse(MealDto);
+// eslint-disable-next-line no-redeclare
+type PaginatedMealResponse = InstanceType<typeof PaginatedMealResponse>;
 
 @Injectable()
 export class MealsService {
@@ -45,7 +52,7 @@ export class MealsService {
 
     const valid = await this.checkDateTime(newMeal.date, newMeal.mealTime);
     if (!valid) {
-      throw new HttpException('Already created meal date time', 401);
+      throw new HttpException('Already created meal with this date mealTime', 401);
     }
 
     const createMeal = new this.mealModel({
@@ -62,7 +69,7 @@ export class MealsService {
     const { userId } = user;
     const oldMeal = await this.mealModel.findOne({
       userId,
-      _id: updateMeal.id,
+      _id: updateMeal._id,
     });
     if (!oldMeal) {
       throw new HttpException('Meal not found', 404);
@@ -71,12 +78,12 @@ export class MealsService {
     if (updateMeal.date || updateMeal.mealTime) {
       const valid = await this.checkDateTime(updateMeal.date, updateMeal.mealTime, oldMeal);
       if (!valid) {
-        throw new HttpException('Already created meal date time', 401);
+        throw new HttpException('Already created meal with this date mealTime', 401);
       }
     }
 
     const updatedMeal = await this.mealModel.findByIdAndUpdate({
-      _id: updateMeal.id,
+      _id: updateMeal._id,
     }, updateMeal, { 
       new: true 
     }) as Meal;
@@ -84,9 +91,29 @@ export class MealsService {
     return updatedMeal;
   }
 
-  async findAllByUser(user: User): Promise<Meal[]> {
+  async findAllByUser(user: User, paginationDto: PaginationDto): Promise<PaginatedMealResponse> {
     const { userId } = user;
-    return this.mealModel.find({ userId });
+    const options = { userId };
+
+    const query = this.mealModel.find({ userId });
+    const orderBy = paginationDto.orderBy || 'createdAt';
+    const order = paginationDto.order || Order.ASC;
+    query.sort({
+      [orderBy]: order === Order.ASC? 1 : -1,
+    });
+
+    const page = paginationDto.page || 1;
+    const limit = paginationDto.limit || 10;
+    const total = await this.mealModel.count(options);
+
+    const nodes = await query.skip((page - 1) * limit).limit(limit).exec();
+
+    return {
+      nodes,
+      total,
+      page,
+      lastPage: Math.ceil(total / limit)
+    }
   }
 
   async delete(id: string, user: User): Promise<boolean> {
