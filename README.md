@@ -6,7 +6,7 @@
 
 
 
-## Authentication/Authorization
+## Authentication/Authorization (implemented)
 
 POST /signup
 
@@ -16,7 +16,7 @@ POST /confirm-email
 
 
 
-## MEALS
+## MEALS (implemented)
 
 Module to manage meal history.
 
@@ -238,7 +238,7 @@ Response body:
       "data": false
     }
 
-## Weight & fat
+## Weight & fat (not implemented)
 
 Module to manage weight and body fat graph.
 
@@ -384,7 +384,7 @@ Response body:
 
 
 
-## Targets
+## Targets (not implemented)
 
 Module to manage date and targets for calculating the achievement rate.
 
@@ -526,7 +526,7 @@ Response body:
       }
     }
 
-## Exercices
+## Exercices (not implemented)
 
 Module to manage exercises.
 
@@ -608,9 +608,6 @@ Response body:
       }
     }
 
- 
-
-
 
 ### PUT /exercises/ (require authentication role USER)
 
@@ -665,10 +662,9 @@ Response body:
 
 
 
-## Diaries
+## Diaries (not implemented)
 
 Module to manage diaries.
-
 
 
 ### POST /diaries/ (require authentication role USER)
@@ -801,7 +797,7 @@ Response body:
     }
 
 
-## Columns
+## Columns (not implemented)
 
 Module to manage columns.
 
