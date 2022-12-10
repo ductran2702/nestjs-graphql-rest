@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsDate, IsEnum, IsOptional, IsString } from 'class-validator';
-import { MealTime } from 'meals/dto/meal-time.enum';
+import { MealTime } from 'meals/types/meal-time.enum';
 
 export class UpdateMealDto {
   @ApiProperty({ description: 'meal\'s id', type: () => 'string' })

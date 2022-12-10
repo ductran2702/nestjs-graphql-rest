@@ -1,6 +1,6 @@
 import * as mongoose from 'mongoose';
 import { Schema } from 'mongoose';
-import { MealTime } from './dto/meal-time.enum';
+import { MealTime } from './types/meal-time.enum';
 
 export const MealSchema = new Schema(
   {

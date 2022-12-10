@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsDate, IsEnum, IsString } from 'class-validator';
 import { Meal } from './meal.interface';
-import { MealTime } from 'meals/dto/meal-time.enum';
+import { MealTime } from 'meals/types/meal-time.enum';
 
 export class MealDto {
   @IsString()

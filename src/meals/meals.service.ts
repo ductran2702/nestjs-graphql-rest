@@ -3,14 +3,14 @@ import { InjectModel } from '@nestjs/mongoose';
 import { User } from 'auth/models';
 import moment from 'moment';
 import { Model, Types } from 'mongoose';
-import { CreateMealDto } from './dto/create-meal.dto';
-import { UpdateMealDto } from './dto/update-meal.dto';
-import { Meal } from './dto/meal.interface';
-import { MealTime } from './dto/meal-time.enum';
+import { CreateMealDto } from './types/create-meal.dto';
+import { UpdateMealDto } from './types/update-meal.dto';
+import { Meal } from './types/meal.interface';
+import { MealTime } from './types/meal-time.enum';
 import { Order, PaginationDto } from 'shared/pagination/pagination.dto';
 import { PaginatedResponse } from 'shared/pagination/paginated-response.type';
-import { MealDto } from './dto/meal.dto';
-import { DateMealTimeFilter } from './dto/date-meal-time-filter';
+import { MealDto } from './types/meal.dto';
+import { DateMealTimeFilter } from './types/date-meal-time-filter';
 
 const PaginatedMealResponse = PaginatedResponse(MealDto);
 // eslint-disable-next-line no-redeclare
