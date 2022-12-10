@@ -10,6 +10,7 @@ import { MealTime } from './dto/meal-time.enum';
 import { Order, PaginationDto } from 'shared/pagination/pagination.dto';
 import { PaginatedResponse } from 'shared/pagination/paginated-response.type';
 import { MealDto } from './dto/meal.dto';
+import { DateMealTimeFilter } from './dto/date-meal-time-filter';
 
 const PaginatedMealResponse = PaginatedResponse(MealDto);
 // eslint-disable-next-line no-redeclare
@@ -23,7 +24,7 @@ export class MealsService {
   ) {}
 
   async checkDateTime(newDate?: Date, newTime?: MealTime, oldMeal?: Meal): Promise<boolean> {
-    const filter: any = {};
+    const filter: DateMealTimeFilter = {};
     if (newDate) {
       filter.date = {
         $gte: moment(newDate).startOf('day').toDate(),
