@@ -19,7 +19,4 @@ jobs:
             - name: Run unit tests with coverage
               env:
                   XXX: 1
-              run:
-                ls
-                cp src/auth/auth-config.development.template.ts  src/auth/auth-config.development.ts
-                yarn test
+              run: cp ./src/auth/auth-config.development.template.ts ./src/auth/auth-config.development.ts & yarn test
