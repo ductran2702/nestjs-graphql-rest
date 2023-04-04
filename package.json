@@ -27,7 +27,7 @@
     "@nestjs/config": "^0.6.1",
     "@nestjs/core": "^7.6.5",
     "@nestjs/graphql": "^9.0.0",
-    "@nestjs/jwt": "^7.2.0",
+    "@nestjs/jwt": "^8.0.1",
     "@nestjs/mapped-types": "^0.1.1",
     "@nestjs/mongoose": "^8.0.1",
     "@nestjs/passport": "^8.2.2",
