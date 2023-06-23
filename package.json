@@ -44,7 +44,7 @@
     "jsonwebtoken": "^8.5.1",
     "moment": "^2.29.4",
     "moment-timezone": "^0.5.43",
-    "mongoose": "^5.11.10",
+    "mongoose": "^5.13.19",
     "nest-access-control": "^2.0.2",
     "nodemailer": "^6.7.1",
     "oauth": "^0.9.15",
